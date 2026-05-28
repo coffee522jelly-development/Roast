@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
 import { Mp3Table } from "./components/Mp3Table";
 import { EditModal } from "./components/EditModal";
 import { DetailView } from "./components/DetailView";
+import { SettingsModal } from "./components/SettingsModal";
 import "./App.css";
 
 export interface Mp3Metadata {
@@ -17,8 +17,17 @@ export interface Mp3Metadata {
   size: number;
 }
 
+interface Settings {
+  defaultFolder: string | null;
+}
+
 function App() {
-  const [selectedDir, setSelectedDir] = useState<string | null>(null);
+  const [settings, setSettings] = useState<Settings>(() => {
+    const saved = localStorage.getItem("roast-settings");
+    return saved ? JSON.parse(saved) : { defaultFolder: null };
+  });
+  const [showSettings, setShowSettings] = useState(false);
+
   const [mp3Files, setMp3Files] = useState<Mp3Metadata[]>([]);
   const [editingFile, setEditingFile] = useState<Mp3Metadata | null>(null);
   const [selectedFile, setSelectedFile] = useState<Mp3Metadata | null>(null);
@@ -31,21 +40,12 @@ function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const drawerToggleRef = useRef<HTMLInputElement | null>(null);
 
-  async function selectDirectory() {
-    try {
-      const selected = await open({
-        directory: true,
-        multiple: false,
-      });
-      if (selected && typeof selected === "string") {
-        setSelectedDir(selected);
-        loadMp3Files(selected);
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus("Error selecting directory");
+  // Load files on startup if default folder exists
+  useEffect(() => {
+    if (settings.defaultFolder) {
+      loadMp3Files(settings.defaultFolder);
     }
-  }
+  }, []);
 
   async function loadMp3Files(dir: string) {
     try {
@@ -62,7 +62,7 @@ function App() {
     try {
       await invoke("organize_mp3", { path });
       setStatus("File organized");
-      if (selectedDir) loadMp3Files(selectedDir);
+      if (settings.defaultFolder) loadMp3Files(settings.defaultFolder);
     } catch (err) {
       console.error(err);
       setStatus(`Error organizing file: ${err}`);
@@ -74,7 +74,7 @@ function App() {
       await invoke("update_mp3_metadata", { path: file.path, metadata: file });
       setStatus("Metadata updated");
       setEditingFile(null);
-      if (selectedDir) loadMp3Files(selectedDir);
+      if (settings.defaultFolder) loadMp3Files(settings.defaultFolder);
     } catch (err) {
       console.error(err);
       setStatus("Error updating metadata");
@@ -127,6 +127,14 @@ function App() {
     );
   }, [mp3Files, searchQuery]);
 
+  const updateSettings = (newSettings: Settings) => {
+    setSettings(newSettings);
+    localStorage.setItem("roast-settings", JSON.stringify(newSettings));
+    if (newSettings.defaultFolder) {
+      loadMp3Files(newSettings.defaultFolder);
+    }
+  };
+
   // Update selected file if the list changes
   useEffect(() => {
     if (selectedFile) {
@@ -136,7 +144,7 @@ function App() {
   }, [mp3Files]);
 
   return (
-    <div className="drawer drawer-end h-screen bg-base-100 text-base-content overflow-hidden">
+    <div className="drawer drawer-end h-screen bg-base-100 text-base-content overflow-hidden font-sans">
       <input
         id="my-drawer"
         type="checkbox"
@@ -149,12 +157,12 @@ function App() {
         <div className="navbar bg-base-200 border-b border-base-content/10 px-4 min-h-0 h-12 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <h1 className="text-sm font-black tracking-tighter uppercase opacity-50">Roast</h1>
-            <button className="btn btn-xs btn-ghost border border-base-content/20" onClick={selectDirectory}>
-              Open Folder
+            <button className="btn btn-xs btn-ghost border border-base-content/20" onClick={() => setShowSettings(true)}>
+              Settings
             </button>
-            {selectedDir && (
-              <span className="text-[10px] opacity-50 truncate max-w-[200px]">
-                {selectedDir}
+            {settings.defaultFolder && (
+              <span className="text-[10px] opacity-30 truncate max-w-[200px]">
+                {settings.defaultFolder}
               </span>
             )}
           </div>
@@ -162,15 +170,15 @@ function App() {
           <div className="flex-1 max-w-sm mx-4">
             <input
               type="text"
-              placeholder="Search..."
-              className="input input-bordered input-xs w-full"
+              placeholder="Search library..."
+              className="input input-bordered input-xs w-full bg-base-300 border-transparent focus:border-primary/30 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
           <div className="flex items-center gap-4">
-            {status && <span className="text-[10px] italic opacity-50">{status}</span>}
+            {status && <span className="text-[10px] italic opacity-30">{status}</span>}
             <label htmlFor="my-drawer" className="btn btn-xs btn-square btn-ghost border border-base-content/20">
               <span className="text-[10px]">INFO</span>
             </label>
@@ -191,23 +199,26 @@ function App() {
 
         {/* Simple Player Bar */}
         {selectedFile && (
-          <div className="bg-base-300 h-16 border-t border-base-content/10 flex items-center px-4 gap-4">
-             <button className="btn btn-circle btn-sm" onClick={togglePlay}>
-                {isPlaying ? "⏸" : "▶"}
-             </button>
-             <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-xs font-bold truncate">{selectedFile.title || selectedFile.filename}</span>
-                <span className="text-[10px] opacity-50">{selectedFile.artist || "Unknown Artist"}</span>
+          <div className="bg-base-300 h-16 border-t border-base-content/10 flex items-center px-4 gap-6">
+             <div className="flex items-center gap-4">
+               <button className="btn btn-circle btn-sm btn-primary" onClick={togglePlay}>
+                  {isPlaying ? "⏸" : "▶"}
+               </button>
+
+               <div className="flex items-center gap-2 bg-base-100 px-3 py-1 rounded-full border border-base-content/5 shadow-inner">
+                  <span className="text-[9px] uppercase font-bold opacity-50 tracking-wider">Loop</span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary toggle-xs"
+                    checked={isLoop}
+                    onChange={(e) => setIsLoop(e.target.checked)}
+                  />
+               </div>
              </div>
 
-             <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold opacity-50">Loop</span>
-                <input
-                  type="checkbox"
-                  className="toggle toggle-xs"
-                  checked={isLoop}
-                  onChange={(e) => setIsLoop(e.target.checked)}
-                />
+             <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-xs font-bold truncate tracking-tight">{selectedFile.title || selectedFile.filename}</span>
+                <span className="text-[10px] opacity-50 uppercase tracking-widest">{selectedFile.artist || "Unknown Artist"}</span>
              </div>
 
              <audio
@@ -222,7 +233,7 @@ function App() {
       </div>
 
       {/* Sidebar (Detail View) */}
-      <div className="drawer-side h-full overflow-hidden border-l border-base-content/10">
+      <div className="drawer-side h-full overflow-hidden border-l border-base-content/10 shadow-2xl">
         <label htmlFor="my-drawer" className="drawer-overlay"></label>
         <div className="bg-base-200 w-80 h-full overflow-hidden">
           <DetailView file={selectedFile} artwork={selectedArtwork} />
@@ -235,6 +246,14 @@ function App() {
           onSave={updateMetadata}
           onCancel={() => setEditingFile(null)}
           onChange={(file) => setEditingFile(file)}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsModal
+          settings={settings}
+          onSave={updateSettings}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </div>
