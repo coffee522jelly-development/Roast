@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Mp3Table } from "./components/Mp3Table";
@@ -24,9 +24,12 @@ function App() {
   const [selectedFile, setSelectedFile] = useState<Mp3Metadata | null>(null);
   const [selectedArtwork, setSelectedArtwork] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoop, setIsLoop] = useState(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const drawerToggleRef = useRef<HTMLInputElement | null>(null);
 
   async function selectDirectory() {
     try {
@@ -96,6 +99,10 @@ function App() {
       audioRef.current.play();
       setIsPlaying(true);
     }
+    // Open drawer on double click
+    if (drawerToggleRef.current) {
+      drawerToggleRef.current.checked = true;
+    }
   };
 
   const togglePlay = () => {
@@ -109,6 +116,17 @@ function App() {
     }
   };
 
+  const filteredFiles = useMemo(() => {
+    if (!searchQuery) return mp3Files;
+    const q = searchQuery.toLowerCase();
+    return mp3Files.filter(f =>
+      f.filename.toLowerCase().includes(q) ||
+      (f.title?.toLowerCase().includes(q)) ||
+      (f.artist?.toLowerCase().includes(q)) ||
+      (f.album?.toLowerCase().includes(q))
+    );
+  }, [mp3Files, searchQuery]);
+
   // Update selected file if the list changes
   useEffect(() => {
     if (selectedFile) {
@@ -119,7 +137,13 @@ function App() {
 
   return (
     <div className="drawer drawer-end h-screen bg-base-100 text-base-content overflow-hidden">
-      <input id="my-drawer" type="checkbox" className="drawer-toggle" defaultChecked={true} />
+      <input
+        id="my-drawer"
+        type="checkbox"
+        className="drawer-toggle"
+        ref={drawerToggleRef}
+        defaultChecked={true}
+      />
       <div className="drawer-content flex flex-col h-full overflow-hidden">
         {/* Header */}
         <div className="navbar bg-base-200 border-b border-base-content/10 px-4 min-h-0 h-12 flex justify-between items-center">
@@ -129,11 +153,22 @@ function App() {
               Open Folder
             </button>
             {selectedDir && (
-              <span className="text-[10px] opacity-50 truncate max-w-xs">
+              <span className="text-[10px] opacity-50 truncate max-w-[200px]">
                 {selectedDir}
               </span>
             )}
           </div>
+
+          <div className="flex-1 max-w-sm mx-4">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="input input-bordered input-xs w-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
           <div className="flex items-center gap-4">
             {status && <span className="text-[10px] italic opacity-50">{status}</span>}
             <label htmlFor="my-drawer" className="btn btn-xs btn-square btn-ghost border border-base-content/20">
@@ -145,7 +180,7 @@ function App() {
         {/* Main Area */}
         <div className="flex-1 overflow-hidden p-2">
           <Mp3Table
-            files={mp3Files}
+            files={filteredFiles}
             onEdit={(file) => setEditingFile(file)}
             onOrganize={organizeFile}
             onSelect={selectFile}
@@ -160,12 +195,24 @@ function App() {
              <button className="btn btn-circle btn-sm" onClick={togglePlay}>
                 {isPlaying ? "⏸" : "▶"}
              </button>
-             <div className="flex flex-col">
-                <span className="text-xs font-bold truncate max-w-xs">{selectedFile.title || selectedFile.filename}</span>
+             <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-xs font-bold truncate">{selectedFile.title || selectedFile.filename}</span>
                 <span className="text-[10px] opacity-50">{selectedFile.artist || "Unknown Artist"}</span>
              </div>
+
+             <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-bold opacity-50">Loop</span>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-xs"
+                  checked={isLoop}
+                  onChange={(e) => setIsLoop(e.target.checked)}
+                />
+             </div>
+
              <audio
               ref={audioRef}
+              loop={isLoop}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
               className="hidden"

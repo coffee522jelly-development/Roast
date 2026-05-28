@@ -116,6 +116,19 @@ pub fn organize_mp3(path: String) -> Result<String, String> {
     let new_path = artist_dir.join(rest);
     fs::rename(&original_path, &new_path).map_err(|e| e.to_string())?;
 
+    // Update ID3 tags
+    let mut tag = Tag::read_from_path(&new_path).unwrap_or_default();
+    tag.set_artist(artist);
+
+    let title = Path::new(rest)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or(rest);
+    tag.set_title(title);
+
+    tag.write_to_path(&new_path, id3::Version::Id3v24)
+        .map_err(|e| e.to_string())?;
+
     Ok(new_path.to_string_lossy().to_string())
 }
 
@@ -136,5 +149,10 @@ mod tests {
         let expected_path = dir.path().join("Artist Name").join("Song Title.mp3");
         assert!(expected_path.exists());
         assert_eq!(result, expected_path.to_string_lossy().to_string());
+
+        // Verify tags
+        let tag = Tag::read_from_path(&expected_path).unwrap();
+        assert_eq!(tag.artist(), Some("Artist Name"));
+        assert_eq!(tag.title(), Some("Song Title"));
     }
 }
