@@ -11,6 +11,7 @@
     "fs:allow-read",
     "fs:allow-write",
     "fs:allow-rename",
-    "fs:allow-mkdir"
+    "fs:allow-mkdir",
+    "core:protocol-asset"
   ]
 }

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useState, useEffect, useRef } from "react";
+import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Mp3Table } from "./components/Mp3Table";
 import { EditModal } from "./components/EditModal";
@@ -14,6 +14,8 @@ export interface Mp3Metadata {
   album: string | null;
   year: number | null;
   artwork: string | null;
+  duration: number | null;
+  size: number;
 }
 
 function App() {
@@ -22,6 +24,9 @@ function App() {
   const [editingFile, setEditingFile] = useState<Mp3Metadata | null>(null);
   const [selectedFile, setSelectedFile] = useState<Mp3Metadata | null>(null);
   const [status, setStatus] = useState<string>("");
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   async function selectDirectory() {
     try {
@@ -73,6 +78,26 @@ function App() {
     }
   }
 
+  const playFile = (file: Mp3Metadata) => {
+    setSelectedFile(file);
+    if (audioRef.current) {
+      audioRef.current.src = convertFileSrc(file.path);
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
   // Update selected file if the list changes
   useEffect(() => {
     if (selectedFile) {
@@ -113,9 +138,29 @@ function App() {
             onEdit={(file) => setEditingFile(file)}
             onOrganize={organizeFile}
             onSelect={(file) => setSelectedFile(file)}
+            onDoubleClick={playFile}
             selectedPath={selectedFile?.path || null}
           />
         </div>
+
+        {/* Simple Player Bar */}
+        {selectedFile && (
+          <div className="bg-base-300 h-16 border-t border-base-content/10 flex items-center px-4 gap-4">
+             <button className="btn btn-circle btn-sm" onClick={togglePlay}>
+                {isPlaying ? "⏸" : "▶"}
+             </button>
+             <div className="flex flex-col">
+                <span className="text-xs font-bold truncate max-w-xs">{selectedFile.title || selectedFile.filename}</span>
+                <span className="text-[10px] opacity-50">{selectedFile.artist || "Unknown Artist"}</span>
+             </div>
+             <audio
+              ref={audioRef}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              className="hidden"
+             />
+          </div>
+        )}
       </div>
 
       {/* Sidebar (Detail View) */}

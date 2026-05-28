@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 use id3::{Tag, TagLike};
 use base64::{Engine as _, engine::general_purpose};
+use mp3_duration;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Mp3Metadata {
@@ -14,6 +15,8 @@ pub struct Mp3Metadata {
     pub album: Option<String>,
     pub year: Option<i32>,
     pub artwork: Option<String>, // Base64 encoded image
+    pub duration: Option<u64>,     // In seconds
+    pub size: u64,               // In bytes
 }
 
 #[tauri::command]
@@ -42,6 +45,14 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
         })
     });
 
+    let duration = mp3_duration::from_path(path)
+        .ok()
+        .map(|d| d.as_secs());
+
+    let size = fs::metadata(path)
+        .map(|m| m.len())
+        .unwrap_or(0);
+
     Ok(Mp3Metadata {
         path: path.to_string_lossy().to_string(),
         filename,
@@ -50,6 +61,8 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
         album: tag.as_ref().and_then(|t| t.album().map(|s| s.to_string())),
         year: tag.as_ref().and_then(|t| t.year()),
         artwork,
+        duration,
+        size,
     })
 }
 

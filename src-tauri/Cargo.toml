@@ -27,6 +27,7 @@ walkdir = "2.5.0"
 tauri-plugin-dialog = "2.7.1"
 tauri-plugin-fs = "2.5.1"
 base64 = "0.22.1"
+mp3-duration = "0.1.10"
 
 [dev-dependencies]
 tempfile = "3.27.0"
