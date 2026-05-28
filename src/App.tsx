@@ -13,7 +13,6 @@ export interface Mp3Metadata {
   artist: string | null;
   album: string | null;
   year: number | null;
-  artwork: string | null;
   duration: number | null;
   size: number;
 }
@@ -23,6 +22,7 @@ function App() {
   const [mp3Files, setMp3Files] = useState<Mp3Metadata[]>([]);
   const [editingFile, setEditingFile] = useState<Mp3Metadata | null>(null);
   const [selectedFile, setSelectedFile] = useState<Mp3Metadata | null>(null);
+  const [selectedArtwork, setSelectedArtwork] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("");
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -78,8 +78,19 @@ function App() {
     }
   }
 
-  const playFile = (file: Mp3Metadata) => {
+  const selectFile = async (file: Mp3Metadata) => {
     setSelectedFile(file);
+    try {
+      const artwork: string | null = await invoke("get_mp3_artwork", { path: file.path });
+      setSelectedArtwork(artwork);
+    } catch (err) {
+      console.error("Error fetching artwork:", err);
+      setSelectedArtwork(null);
+    }
+  };
+
+  const playFile = (file: Mp3Metadata) => {
+    selectFile(file);
     if (audioRef.current) {
       audioRef.current.src = convertFileSrc(file.path);
       audioRef.current.play();
@@ -137,7 +148,7 @@ function App() {
             files={mp3Files}
             onEdit={(file) => setEditingFile(file)}
             onOrganize={organizeFile}
-            onSelect={(file) => setSelectedFile(file)}
+            onSelect={selectFile}
             onDoubleClick={playFile}
             selectedPath={selectedFile?.path || null}
           />
@@ -167,7 +178,7 @@ function App() {
       <div className="drawer-side h-full overflow-hidden border-l border-base-content/10">
         <label htmlFor="my-drawer" className="drawer-overlay"></label>
         <div className="bg-base-200 w-80 h-full overflow-hidden">
-          <DetailView file={selectedFile} />
+          <DetailView file={selectedFile} artwork={selectedArtwork} />
         </div>
       </div>
 

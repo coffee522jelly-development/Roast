@@ -8,6 +8,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             mp3::get_mp3_metadata,
+            mp3::get_mp3_artwork,
             mp3::update_mp3_metadata,
             mp3::organize_mp3
         ])

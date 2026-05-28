@@ -12,6 +12,9 @@
     "fs:allow-write",
     "fs:allow-rename",
     "fs:allow-mkdir",
-    "core:protocol-asset"
+    {
+      "identifier": "fs:scope",
+      "allow": [{ "path": "**" }]
+    }
   ]
 }

@@ -2,9 +2,10 @@ import { Mp3Metadata } from "../App";
 
 interface DetailViewProps {
   file: Mp3Metadata | null;
+  artwork: string | null;
 }
 
-export function DetailView({ file }: DetailViewProps) {
+export function DetailView({ file, artwork }: DetailViewProps) {
   if (!file) {
     return (
       <div className="flex items-center justify-center h-full text-base-content/50 italic text-sm">
@@ -31,9 +32,9 @@ export function DetailView({ file }: DetailViewProps) {
   return (
     <div className="p-4 flex flex-col gap-4 overflow-y-auto h-full">
       <div className="aspect-square w-full bg-base-300 rounded-lg overflow-hidden flex items-center justify-center border border-base-content/10 shadow-inner">
-        {file.artwork ? (
+        {artwork ? (
           <img
-            src={`data:image/jpeg;base64,${file.artwork}`}
+            src={`data:image/jpeg;base64,${artwork}`}
             alt="Album Art"
             className="w-full h-full object-cover"
           />

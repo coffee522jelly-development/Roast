@@ -14,7 +14,6 @@ pub struct Mp3Metadata {
     pub artist: Option<String>,
     pub album: Option<String>,
     pub year: Option<i32>,
-    pub artwork: Option<String>, // Base64 encoded image
     pub duration: Option<u64>,     // In seconds
     pub size: u64,               // In bytes
 }
@@ -32,18 +31,23 @@ pub fn get_mp3_metadata(dir_path: String) -> Result<Vec<Mp3Metadata>, String> {
     Ok(results)
 }
 
+#[tauri::command]
+pub fn get_mp3_artwork(path: String) -> Result<Option<String>, String> {
+    let tag = Tag::read_from_path(&path).ok();
+    let artwork = tag.as_ref().and_then(|t| {
+        t.pictures().next().map(|p| {
+            general_purpose::STANDARD.encode(&p.data)
+        })
+    });
+    Ok(artwork)
+}
+
 pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
     let tag = Tag::read_from_path(path).ok();
     let filename = path.file_name()
         .and_then(|s| s.to_str())
         .unwrap_or_default()
         .to_string();
-
-    let artwork = tag.as_ref().and_then(|t| {
-        t.pictures().next().map(|p| {
-            general_purpose::STANDARD.encode(&p.data)
-        })
-    });
 
     let duration = mp3_duration::from_path(path)
         .ok()
@@ -60,7 +64,6 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
         artist: tag.as_ref().and_then(|t| t.artist().map(|s| s.to_string())),
         album: tag.as_ref().and_then(|t| t.album().map(|s| s.to_string())),
         year: tag.as_ref().and_then(|t| t.year()),
-        artwork,
         duration,
         size,
     })
