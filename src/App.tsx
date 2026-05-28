@@ -27,6 +27,7 @@ function App() {
     return saved ? JSON.parse(saved) : { defaultFolder: null };
   });
   const [showSettings, setShowSettings] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [mp3Files, setMp3Files] = useState<Mp3Metadata[]>([]);
   const [editingFile, setEditingFile] = useState<Mp3Metadata | null>(null);
@@ -38,7 +39,6 @@ function App() {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const drawerToggleRef = useRef<HTMLInputElement | null>(null);
 
   // Load files on startup if default folder exists
   useEffect(() => {
@@ -96,25 +96,29 @@ function App() {
     selectFile(file);
     if (audioRef.current) {
       const assetUrl = convertFileSrc(file.path);
+      console.log("Playing:", assetUrl);
       audioRef.current.src = assetUrl;
-      audioRef.current.load(); // Force reload to ensure src is updated
-      audioRef.current.play().catch(e => console.error("Playback error:", e));
-      setIsPlaying(true);
+      audioRef.current.load();
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(e => {
+          console.error("Playback failed:", e);
+          setStatus(`Playback failed: ${e.message}`);
+        });
     }
-    // Open drawer on double click
-    if (drawerToggleRef.current) {
-      drawerToggleRef.current.checked = true;
-    }
+    setIsSidebarOpen(true);
   };
 
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        setIsPlaying(false);
       } else {
-        audioRef.current.play().catch(e => console.error("Playback error:", e));
+        audioRef.current.play()
+          .then(() => setIsPlaying(true))
+          .catch(e => console.error("Playback failed:", e));
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -151,8 +155,8 @@ function App() {
         id="my-drawer"
         type="checkbox"
         className="drawer-toggle"
-        ref={drawerToggleRef}
-        defaultChecked={true}
+        checked={isSidebarOpen}
+        onChange={(e) => setIsSidebarOpen(e.target.checked)}
       />
       <div className="drawer-content flex flex-col h-full overflow-hidden">
         {/* Header */}
@@ -236,7 +240,7 @@ function App() {
 
       {/* Sidebar (Detail View) */}
       <div className="drawer-side h-full overflow-hidden border-l border-base-content/10 shadow-2xl">
-        <label htmlFor="my-drawer" className="drawer-overlay"></label>
+        <label htmlFor="my-drawer" className="drawer-overlay" onClick={() => setIsSidebarOpen(false)}></label>
         <div className="bg-base-200 w-80 h-full overflow-hidden">
           <DetailView file={selectedFile} artwork={selectedArtwork} />
         </div>

@@ -10,9 +10,11 @@
 body {
   margin: 0;
   user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Allow text selection in inputs and modals */
 input, textarea, .modal-box {
-  user-select: auto;
+  user-select: text;
+  -webkit-user-select: text;
 }

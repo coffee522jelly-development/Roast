@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mp3Metadata } from "../App";
 
 interface Mp3TableProps {
@@ -26,10 +26,14 @@ export function Mp3Table({ files, onEdit, onOrganize, onSelect, onDoubleClick, s
     onSelect(file);
   };
 
-  const closeContextMenu = () => setContextMenu(null);
+  useEffect(() => {
+    const handleGlobalClick = () => setContextMenu(null);
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, []);
 
   return (
-    <div className="overflow-x-auto h-full relative" onClick={closeContextMenu}>
+    <div className="overflow-x-auto h-full relative">
       <table className="table table-xs table-pin-rows">
         <thead>
           <tr>
@@ -46,7 +50,7 @@ export function Mp3Table({ files, onEdit, onOrganize, onSelect, onDoubleClick, s
               key={file.path}
               className={`hover cursor-pointer border-transparent ${selectedPath === file.path ? "bg-primary/10 text-primary font-medium" : ""}`}
               onClick={(e) => { e.stopPropagation(); onSelect(file); }}
-              onDoubleClick={() => onDoubleClick(file)}
+              onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(file); }}
               onContextMenu={(e) => handleContextMenu(e, file)}
             >
               <td className="max-w-xs truncate opacity-80">{file.filename}</td>
@@ -74,25 +78,27 @@ export function Mp3Table({ files, onEdit, onOrganize, onSelect, onDoubleClick, s
 
       {contextMenu && (
         <div
-          className="fixed z-50 bg-base-200 border border-base-content/10 shadow-xl rounded-lg p-1 min-w-[120px]"
+          className="fixed z-[100] bg-base-200 border border-base-content/10 shadow-2xl rounded-lg p-1 min-w-[140px]"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
           <ul className="menu menu-xs p-0 gap-0.5">
             <li>
               <button
-                className="hover:bg-primary hover:text-primary-content py-1.5"
-                onClick={() => { onEdit(contextMenu.file); closeContextMenu(); }}
+                className="hover:bg-primary hover:text-primary-content py-2 px-3 flex justify-between"
+                onClick={() => { onEdit(contextMenu.file); setContextMenu(null); }}
               >
-                Edit Meta
+                <span>Edit Meta</span>
+                <span className="opacity-30">✎</span>
               </button>
             </li>
             <li>
               <button
-                className="hover:bg-primary hover:text-primary-content py-1.5"
-                onClick={() => { onOrganize(contextMenu.file.path); closeContextMenu(); }}
+                className="hover:bg-primary hover:text-primary-content py-2 px-3 flex justify-between"
+                onClick={() => { onOrganize(contextMenu.file.path); setContextMenu(null); }}
               >
-                Organize
+                <span>Organize</span>
+                <span className="opacity-30">📂</span>
               </button>
             </li>
           </ul>
