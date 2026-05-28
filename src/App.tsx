@@ -95,8 +95,10 @@ function App() {
   const playFile = (file: Mp3Metadata) => {
     selectFile(file);
     if (audioRef.current) {
-      audioRef.current.src = convertFileSrc(file.path);
-      audioRef.current.play();
+      const assetUrl = convertFileSrc(file.path);
+      audioRef.current.src = assetUrl;
+      audioRef.current.load(); // Force reload to ensure src is updated
+      audioRef.current.play().catch(e => console.error("Playback error:", e));
       setIsPlaying(true);
     }
     // Open drawer on double click
@@ -110,7 +112,7 @@ function App() {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        audioRef.current.play();
+        audioRef.current.play().catch(e => console.error("Playback error:", e));
       }
       setIsPlaying(!isPlaying);
     }
@@ -120,10 +122,10 @@ function App() {
     if (!searchQuery) return mp3Files;
     const q = searchQuery.toLowerCase();
     return mp3Files.filter(f =>
-      f.filename.toLowerCase().includes(q) ||
-      (f.title?.toLowerCase().includes(q)) ||
-      (f.artist?.toLowerCase().includes(q)) ||
-      (f.album?.toLowerCase().includes(q))
+      (f.filename?.toLowerCase() ?? "").includes(q) ||
+      (f.title?.toLowerCase() ?? "").includes(q) ||
+      (f.artist?.toLowerCase() ?? "").includes(q) ||
+      (f.album?.toLowerCase() ?? "").includes(q)
     );
   }, [mp3Files, searchQuery]);
 
