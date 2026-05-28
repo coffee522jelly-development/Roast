@@ -1,23 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Mp3Table } from "./components/Mp3Table";
 import { EditModal } from "./components/EditModal";
+import { DetailView } from "./components/DetailView";
 import "./App.css";
 
 export interface Mp3Metadata {
-  path: String;
-  filename: String;
+  path: string;
+  filename: string;
   title: string | null;
   artist: string | null;
   album: string | null;
   year: number | null;
+  artwork: string | null;
 }
 
 function App() {
   const [selectedDir, setSelectedDir] = useState<string | null>(null);
   const [mp3Files, setMp3Files] = useState<Mp3Metadata[]>([]);
   const [editingFile, setEditingFile] = useState<Mp3Metadata | null>(null);
+  const [selectedFile, setSelectedFile] = useState<Mp3Metadata | null>(null);
   const [status, setStatus] = useState<string>("");
 
   async function selectDirectory() {
@@ -70,21 +73,58 @@ function App() {
     }
   }
 
-  return (
-    <main className="container">
-      <h1>Roast - Music Manager</h1>
+  // Update selected file if the list changes
+  useEffect(() => {
+    if (selectedFile) {
+      const updated = mp3Files.find(f => f.path === selectedFile.path);
+      if (updated) setSelectedFile(updated);
+    }
+  }, [mp3Files]);
 
-      <div className="controls">
-        <button onClick={selectDirectory}>Select Directory</button>
-        {selectedDir && <p>Directory: {selectedDir}</p>}
-        {status && <p className="status">{status}</p>}
+  return (
+    <div className="drawer drawer-end h-screen bg-base-100 text-base-content overflow-hidden">
+      <input id="my-drawer" type="checkbox" className="drawer-toggle" defaultChecked={true} />
+      <div className="drawer-content flex flex-col h-full overflow-hidden">
+        {/* Header */}
+        <div className="navbar bg-base-200 border-b border-base-content/10 px-4 min-h-0 h-12 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <h1 className="text-sm font-black tracking-tighter uppercase opacity-50">Roast</h1>
+            <button className="btn btn-xs btn-ghost border border-base-content/20" onClick={selectDirectory}>
+              Open Folder
+            </button>
+            {selectedDir && (
+              <span className="text-[10px] opacity-50 truncate max-w-xs">
+                {selectedDir}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            {status && <span className="text-[10px] italic opacity-50">{status}</span>}
+            <label htmlFor="my-drawer" className="btn btn-xs btn-square btn-ghost border border-base-content/20">
+              <span className="text-[10px]">INFO</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Main Area */}
+        <div className="flex-1 overflow-hidden p-2">
+          <Mp3Table
+            files={mp3Files}
+            onEdit={(file) => setEditingFile(file)}
+            onOrganize={organizeFile}
+            onSelect={(file) => setSelectedFile(file)}
+            selectedPath={selectedFile?.path || null}
+          />
+        </div>
       </div>
 
-      <Mp3Table
-        files={mp3Files}
-        onEdit={(file) => setEditingFile(file)}
-        onOrganize={organizeFile}
-      />
+      {/* Sidebar (Detail View) */}
+      <div className="drawer-side h-full overflow-hidden border-l border-base-content/10">
+        <label htmlFor="my-drawer" className="drawer-overlay"></label>
+        <div className="bg-base-200 w-80 h-full overflow-hidden">
+          <DetailView file={selectedFile} />
+        </div>
+      </div>
 
       {editingFile && (
         <EditModal
@@ -94,7 +134,7 @@ function App() {
           onChange={(file) => setEditingFile(file)}
         />
       )}
-    </main>
+    </div>
   );
 }
 
