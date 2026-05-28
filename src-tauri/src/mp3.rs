@@ -16,7 +16,8 @@ pub struct Mp3Metadata {
     pub artwork: Option<String>, // Base64 encoded image
 }
 
-pub fn get_mp3_metadata_logic(dir_path: String) -> Result<Vec<Mp3Metadata>, String> {
+#[tauri::command]
+pub fn get_mp3_metadata(dir_path: String) -> Result<Vec<Mp3Metadata>, String> {
     let mut results = Vec::new();
     for entry in WalkDir::new(&dir_path).into_iter().filter_map(|e| e.ok()) {
         let path = entry.path();
@@ -52,7 +53,8 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
     })
 }
 
-pub fn update_mp3_metadata_logic(path: String, metadata: Mp3Metadata) -> Result<(), String> {
+#[tauri::command]
+pub fn update_mp3_metadata(path: String, metadata: Mp3Metadata) -> Result<(), String> {
     let mut tag = Tag::read_from_path(&path).unwrap_or_default();
 
     if let Some(title) = metadata.title {
@@ -72,7 +74,8 @@ pub fn update_mp3_metadata_logic(path: String, metadata: Mp3Metadata) -> Result<
         .map_err(|e| e.to_string())
 }
 
-pub fn organize_mp3_logic(path: String) -> Result<String, String> {
+#[tauri::command]
+pub fn organize_mp3(path: String) -> Result<String, String> {
     let original_path = PathBuf::from(&path);
     let filename = original_path.file_name()
         .and_then(|s| s.to_str())
@@ -112,7 +115,7 @@ mod tests {
         let file_path = dir.path().join("Artist Name - Song Title.mp3");
         File::create(&file_path).unwrap();
 
-        let result = organize_mp3_logic(file_path.to_string_lossy().to_string()).unwrap();
+        let result = organize_mp3(file_path.to_string_lossy().to_string()).unwrap();
 
         let expected_path = dir.path().join("Artist Name").join("Song Title.mp3");
         assert!(expected_path.exists());
