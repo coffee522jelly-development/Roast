@@ -9,6 +9,8 @@
 
 body {
   margin: 0;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Specific elements that shouldn't be selectable */
@@ -21,4 +23,9 @@ body {
 .table, .modal-box, input, textarea {
   user-select: text;
   -webkit-user-select: text;
+}
+
+/* Range input styling for a cleaner look */
+input[type="range"] {
+  cursor: pointer;
 }

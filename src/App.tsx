@@ -38,6 +38,10 @@ function App() {
   const [isLoop, setIsLoop] = useState(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Disable right-click globally
@@ -105,7 +109,6 @@ function App() {
     selectFile(file);
     if (audioRef.current) {
       const assetUrl = convertFileSrc(file.path);
-      console.log("Playing:", assetUrl);
       audioRef.current.src = assetUrl;
       audioRef.current.load();
       audioRef.current.play()
@@ -129,6 +132,36 @@ function App() {
           .catch(e => console.error("Playback failed:", e));
       }
     }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = parseFloat(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const vol = parseFloat(e.target.value);
+    setVolume(vol);
+    if (audioRef.current) {
+      audioRef.current.volume = vol;
+    }
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00";
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const filteredFiles = useMemo(() => {
@@ -216,37 +249,70 @@ function App() {
         )}
       </div>
 
-      {/* Simple Player Bar */}
+      {/* Enhanced Player Bar */}
       {selectedFile && (
-        <div className="bg-base-300 h-16 border-t border-base-content/10 flex items-center px-4 gap-6">
-           <div className="flex items-center gap-4">
-             <button className="btn btn-circle btn-sm btn-primary" onClick={togglePlay}>
-                {isPlaying ? "⏸" : "▶"}
-             </button>
+        <div className="bg-base-300 border-t border-base-content/10 flex flex-col p-2 gap-1 px-4">
+          {/* Seekbar */}
+          <div className="flex items-center gap-2 w-full">
+            <span className="text-[9px] font-mono opacity-50 w-8">{formatTime(currentTime)}</span>
+            <input
+              type="range"
+              min="0"
+              max={duration || 0}
+              step="0.1"
+              value={currentTime}
+              onChange={handleSeek}
+              className="range range-primary range-xs h-1 flex-1"
+            />
+            <span className="text-[9px] font-mono opacity-50 w-8">{formatTime(duration)}</span>
+          </div>
 
-             <div className="flex items-center gap-2 bg-base-100 px-3 py-1 rounded-full border border-base-content/5 shadow-inner">
-                <span className="text-[9px] uppercase font-bold opacity-50 tracking-wider">Loop</span>
+          <div className="flex items-center gap-6 h-10">
+             <div className="flex items-center gap-3">
+               <button className="btn btn-circle btn-sm btn-primary" onClick={togglePlay}>
+                  {isPlaying ? "⏸" : "▶"}
+               </button>
+
+               <div className="flex items-center gap-2 bg-base-100 px-3 py-1 rounded-full border border-base-content/5 shadow-inner">
+                  <span className="text-[9px] uppercase font-bold opacity-50 tracking-wider">Loop</span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary toggle-xs"
+                    checked={isLoop}
+                    onChange={(e) => setIsLoop(e.target.checked)}
+                  />
+               </div>
+             </div>
+
+             <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-xs font-bold truncate tracking-tight">{selectedFile.title || selectedFile.filename}</span>
+                <span className="text-[10px] opacity-50 uppercase tracking-widest">{selectedFile.artist || "Unknown Artist"}</span>
+             </div>
+
+             {/* Volume Control */}
+             <div className="flex items-center gap-2 w-32">
+                <span className="text-[10px] opacity-50">Vol</span>
                 <input
-                  type="checkbox"
-                  className="toggle toggle-primary toggle-xs"
-                  checked={isLoop}
-                  onChange={(e) => setIsLoop(e.target.checked)}
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  className="range range-xs h-1 flex-1"
                 />
              </div>
-           </div>
 
-           <div className="flex flex-col flex-1 min-w-0">
-              <span className="text-xs font-bold truncate tracking-tight">{selectedFile.title || selectedFile.filename}</span>
-              <span className="text-[10px] opacity-50 uppercase tracking-widest">{selectedFile.artist || "Unknown Artist"}</span>
-           </div>
-
-           <audio
-            ref={audioRef}
-            loop={isLoop}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            className="hidden"
-           />
+             <audio
+              ref={audioRef}
+              loop={isLoop}
+              onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={handleTimeUpdate}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              className="hidden"
+             />
+          </div>
         </div>
       )}
 
