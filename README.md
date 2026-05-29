@@ -1,7 +1,60 @@
-# Tauri + React + Typescript
+# Roast - 自家製音楽管理アプリ
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+Roast（ロースト）は、じっくりと音楽ファイルと向き合いたい人のための、ミニマルで洗練されたMP3管理アプリです。Tauri v2、React、そしてDaisyUIを使用して構築されています。
 
-## Recommended IDE Setup
+## コンセプト
+「自家製」の温かみと、最新のデスクトップ技術を融合。散らかった音楽ファイルをアーティストごとに丁寧に仕分けし、タグを整える。そんな時間を楽しむためのツールを目指しています。
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## 主な機能
+
+- **自動フォルダ振り分け (Organize)**
+  - 「アーティスト名 - 曲名.mp3」というファイル名からアーティスト名を自動抽出し、アーティスト名のフォルダを作成して移動します。
+  - 移動と同時に、ファイル名からアーティスト名を削除して整理します。
+  - さらに、ID3タグ（アーティスト・タイトル）も移動後の状態に合わせて自動更新します。
+
+- **メタデータ編集**
+  - MP3のID3タグ（タイトル、アーティスト、アルバム、年）を直接編集できます。
+
+- **スマート・リスニング**
+  - ダブルクリックで即座に再生。
+  - 再生と同時にサイドバーが開き、アルバムアートワークや詳細なファイル情報を表示します。
+  - 1曲ループ再生機能搭載。
+
+- **ライブラリ管理**
+  - 設定画面からデフォルトの音楽フォルダを指定可能。起動時に自動的にスキャンします。
+  - リアルタイム検索機能で、大量のファイルから目的の曲をすぐに見つけられます。
+  - 右クリックメニューから素早く編集や整理が可能。
+
+- **洗練されたデザイン**
+  - DaisyUIを採用したミニマルなインターフェース。
+  - UIパーツを最小限のサイズ（xs）に抑え、情報密度と美しさを両立。
+  - 1920x1080の広々としたキャンバスで音楽と向き合えます。
+
+## スクリーンショット
+*(アプリを起動してご確認ください)*
+
+## 使い方
+
+1. アプリを起動し、「Settings」ボタンからお使いの音楽ライブラリフォルダを選択します。
+2. リストに表示されたファイルを右クリック、または「Organize」ボタンでフォルダ分けを実行します。
+3. 曲をダブルクリックすると、音楽が再生され、右側のサイドパネルに詳細情報が表示されます。
+4. 検索バーを使って、タイトルやアーティスト名で絞り込みができます。
+
+## 技術スタック
+- **Frontend**: React, TypeScript, Tailwind CSS, DaisyUI
+- **Backend**: Rust, Tauri v2
+- **Crates**: id3, mp3-duration, walkdir, serde
+
+## 開発者向け
+このプロジェクトは Tauri v2 を使用しています。
+
+```bash
+# 依存関係のインストール
+npm install
+
+# 開発モードで起動
+npm run tauri dev
+```
+
+---
+Roastで、あなたの音楽コレクションを最高の状態に。
