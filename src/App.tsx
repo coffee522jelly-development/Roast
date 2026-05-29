@@ -41,6 +41,7 @@ function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [audioSrc, setAudioSrc] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -52,6 +53,19 @@ function App() {
     document.addEventListener("contextmenu", handleContextMenu);
     return () => document.removeEventListener("contextmenu", handleContextMenu);
   }, []);
+
+  // Handle audio source changes and autoplay
+  useEffect(() => {
+    if (audioSrc && audioRef.current) {
+      audioRef.current.load();
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(e => {
+          console.error("Playback failed:", e);
+          setStatus(`Playback failed: ${e.message}`);
+        });
+    }
+  }, [audioSrc]);
 
   // Load files on startup if default folder exists
   useEffect(() => {
@@ -107,17 +121,8 @@ function App() {
 
   const playFile = (file: Mp3Metadata) => {
     selectFile(file);
-    if (audioRef.current) {
-      const assetUrl = convertFileSrc(file.path);
-      audioRef.current.src = assetUrl;
-      audioRef.current.load();
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch(e => {
-          console.error("Playback failed:", e);
-          setStatus(`Playback failed: ${e.message}`);
-        });
-    }
+    const assetUrl = convertFileSrc(file.path);
+    setAudioSrc(assetUrl);
     setIsSidebarOpen(true);
   };
 
@@ -193,6 +198,18 @@ function App() {
 
   return (
     <div className="h-screen bg-base-100 text-base-content overflow-hidden font-sans flex flex-col">
+      {/* Hidden Audio Element - Always rendered */}
+      <audio
+        ref={audioRef}
+        src={audioSrc || undefined}
+        loop={isLoop}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleTimeUpdate}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        className="hidden"
+      />
+
       {/* Header */}
       <div className="navbar bg-base-200 border-b border-base-content/10 px-4 min-h-0 h-12 flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -291,7 +308,7 @@ function App() {
 
              {/* Volume Control */}
              <div className="flex items-center gap-2 w-32">
-                <span className="text-[10px] opacity-50">Vol</span>
+                <span className="text-[10px] opacity-50 font-bold uppercase tracking-tighter">Vol</span>
                 <input
                   type="range"
                   min="0"
@@ -302,16 +319,6 @@ function App() {
                   className="range range-xs h-1 flex-1"
                 />
              </div>
-
-             <audio
-              ref={audioRef}
-              loop={isLoop}
-              onTimeUpdate={handleTimeUpdate}
-              onLoadedMetadata={handleTimeUpdate}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              className="hidden"
-             />
           </div>
         </div>
       )}
