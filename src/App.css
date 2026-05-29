@@ -9,12 +9,16 @@
 
 body {
   margin: 0;
+}
+
+/* Specific elements that shouldn't be selectable */
+.navbar, .btn, .menu, .status, .player-bar {
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Allow text selection in inputs and modals */
-input, textarea, .modal-box {
+/* Allow text selection in table and modal */
+.table, .modal-box, input, textarea {
   user-select: text;
   -webkit-user-select: text;
 }

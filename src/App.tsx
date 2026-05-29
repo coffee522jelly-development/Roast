@@ -40,6 +40,15 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Disable right-click globally
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+    document.addEventListener("contextmenu", handleContextMenu);
+    return () => document.removeEventListener("contextmenu", handleContextMenu);
+  }, []);
+
   // Load files on startup if default folder exists
   useEffect(() => {
     if (settings.defaultFolder) {
@@ -150,47 +159,43 @@ function App() {
   }, [mp3Files]);
 
   return (
-    <div className="drawer drawer-end h-screen bg-base-100 text-base-content overflow-hidden font-sans">
-      <input
-        id="my-drawer"
-        type="checkbox"
-        className="drawer-toggle"
-        checked={isSidebarOpen}
-        onChange={(e) => setIsSidebarOpen(e.target.checked)}
-      />
-      <div className="drawer-content flex flex-col h-full overflow-hidden">
-        {/* Header */}
-        <div className="navbar bg-base-200 border-b border-base-content/10 px-4 min-h-0 h-12 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <h1 className="text-sm font-black tracking-tighter uppercase opacity-50">Roast</h1>
-            <button className="btn btn-xs btn-ghost border border-base-content/20" onClick={() => setShowSettings(true)}>
-              Settings
-            </button>
-            {settings.defaultFolder && (
-              <span className="text-[10px] opacity-30 truncate max-w-[200px]">
-                {settings.defaultFolder}
-              </span>
-            )}
-          </div>
-
-          <div className="flex-1 max-w-sm mx-4">
-            <input
-              type="text"
-              placeholder="Search library..."
-              className="input input-bordered input-xs w-full bg-base-300 border-transparent focus:border-primary/30 transition-all"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            {status && <span className="text-[10px] italic opacity-30">{status}</span>}
-            <label htmlFor="my-drawer" className="btn btn-xs btn-square btn-ghost border border-base-content/20">
-              <span className="text-[10px]">INFO</span>
-            </label>
-          </div>
+    <div className="h-screen bg-base-100 text-base-content overflow-hidden font-sans flex flex-col">
+      {/* Header */}
+      <div className="navbar bg-base-200 border-b border-base-content/10 px-4 min-h-0 h-12 flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <h1 className="text-sm font-black tracking-tighter uppercase opacity-50">Roast</h1>
+          <button className="btn btn-xs btn-ghost border border-base-content/20" onClick={() => setShowSettings(true)}>
+            Settings
+          </button>
+          {settings.defaultFolder && (
+            <span className="text-[10px] opacity-30 truncate max-w-[200px]">
+              {settings.defaultFolder}
+            </span>
+          )}
         </div>
 
+        <div className="flex-1 max-w-sm mx-4">
+          <input
+            type="text"
+            placeholder="Search library..."
+            className="input input-bordered input-xs w-full bg-base-300 border-transparent focus:border-primary/30 transition-all"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="flex items-center gap-4">
+          {status && <span className="text-[10px] italic opacity-30">{status}</span>}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className={`btn btn-xs btn-square ${isSidebarOpen ? "btn-primary" : "btn-ghost border border-base-content/20"}`}
+          >
+            <span className="text-[10px]">INFO</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
         {/* Main Area */}
         <div className="flex-1 overflow-hidden p-2">
           <Mp3Table
@@ -203,48 +208,47 @@ function App() {
           />
         </div>
 
-        {/* Simple Player Bar */}
-        {selectedFile && (
-          <div className="bg-base-300 h-16 border-t border-base-content/10 flex items-center px-4 gap-6">
-             <div className="flex items-center gap-4">
-               <button className="btn btn-circle btn-sm btn-primary" onClick={togglePlay}>
-                  {isPlaying ? "⏸" : "▶"}
-               </button>
-
-               <div className="flex items-center gap-2 bg-base-100 px-3 py-1 rounded-full border border-base-content/5 shadow-inner">
-                  <span className="text-[9px] uppercase font-bold opacity-50 tracking-wider">Loop</span>
-                  <input
-                    type="checkbox"
-                    className="toggle toggle-primary toggle-xs"
-                    checked={isLoop}
-                    onChange={(e) => setIsLoop(e.target.checked)}
-                  />
-               </div>
-             </div>
-
-             <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-xs font-bold truncate tracking-tight">{selectedFile.title || selectedFile.filename}</span>
-                <span className="text-[10px] opacity-50 uppercase tracking-widest">{selectedFile.artist || "Unknown Artist"}</span>
-             </div>
-
-             <audio
-              ref={audioRef}
-              loop={isLoop}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              className="hidden"
-             />
+        {/* Sidebar (Detail View) */}
+        {isSidebarOpen && (
+          <div className="w-80 h-full bg-base-200 border-l border-base-content/10 shadow-2xl overflow-hidden transition-all duration-300">
+            <DetailView file={selectedFile} artwork={selectedArtwork} />
           </div>
         )}
       </div>
 
-      {/* Sidebar (Detail View) */}
-      <div className="drawer-side h-full overflow-hidden border-l border-base-content/10 shadow-2xl">
-        <label htmlFor="my-drawer" className="drawer-overlay" onClick={() => setIsSidebarOpen(false)}></label>
-        <div className="bg-base-200 w-80 h-full overflow-hidden">
-          <DetailView file={selectedFile} artwork={selectedArtwork} />
+      {/* Simple Player Bar */}
+      {selectedFile && (
+        <div className="bg-base-300 h-16 border-t border-base-content/10 flex items-center px-4 gap-6">
+           <div className="flex items-center gap-4">
+             <button className="btn btn-circle btn-sm btn-primary" onClick={togglePlay}>
+                {isPlaying ? "⏸" : "▶"}
+             </button>
+
+             <div className="flex items-center gap-2 bg-base-100 px-3 py-1 rounded-full border border-base-content/5 shadow-inner">
+                <span className="text-[9px] uppercase font-bold opacity-50 tracking-wider">Loop</span>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-primary toggle-xs"
+                  checked={isLoop}
+                  onChange={(e) => setIsLoop(e.target.checked)}
+                />
+             </div>
+           </div>
+
+           <div className="flex flex-col flex-1 min-w-0">
+              <span className="text-xs font-bold truncate tracking-tight">{selectedFile.title || selectedFile.filename}</span>
+              <span className="text-[10px] opacity-50 uppercase tracking-widest">{selectedFile.artist || "Unknown Artist"}</span>
+           </div>
+
+           <audio
+            ref={audioRef}
+            loop={isLoop}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            className="hidden"
+           />
         </div>
-      </div>
+      )}
 
       {editingFile && (
         <EditModal

@@ -18,7 +18,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost http://asset.localhost data:; audio-src 'self' asset: https://asset.localhost http://asset.localhost; connect-src 'self' asset: https://asset.localhost http://asset.localhost; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+      "csp": "default-src 'self' tauri: localhost; img-src 'self' tauri: asset: https://asset.localhost http://asset.localhost data:; audio-src 'self' tauri: asset: https://asset.localhost http://asset.localhost; connect-src 'self' tauri: asset: https://asset.localhost http://asset.localhost; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
       "assetProtocol": {
         "enable": true,
         "scope": ["**"]
