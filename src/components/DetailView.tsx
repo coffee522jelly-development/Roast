@@ -34,7 +34,7 @@ export function DetailView({ file, artwork }: DetailViewProps) {
       <div className="aspect-square w-full bg-base-300 rounded-lg overflow-hidden flex items-center justify-center border border-base-content/10 shadow-inner">
         {artwork ? (
           <img
-            src={`data:image/jpeg;base64,${artwork}`}
+            src={artwork}
             alt="Album Art"
             className="w-full h-full object-cover"
           />

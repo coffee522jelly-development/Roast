@@ -19,13 +19,19 @@ body {
   -webkit-user-select: none;
 }
 
-/* Allow text selection in table and modal */
-.table, .modal-box, input, textarea {
+/* Explicitly disable selection for table rows to prevent blue highlights on click/double-click */
+tr {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow text selection only where useful */
+.modal-box, input, textarea {
   user-select: text;
   -webkit-user-select: text;
 }
 
-/* Range input styling for a cleaner look */
+/* Range input styling */
 input[type="range"] {
   cursor: pointer;
 }

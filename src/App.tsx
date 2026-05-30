@@ -15,6 +15,7 @@ export interface Mp3Metadata {
   year: number | null;
   duration: number | null;
   size: number;
+  is_locked: boolean;
 }
 
 interface Settings {
@@ -57,12 +58,16 @@ function App() {
   // Handle audio source changes and autoplay
   useEffect(() => {
     if (audioSrc && audioRef.current) {
+      console.log("Audio source changed:", audioSrc);
       audioRef.current.load();
       audioRef.current.play()
-        .then(() => setIsPlaying(true))
+        .then(() => {
+          setIsPlaying(true);
+          setStatus("Playing...");
+        })
         .catch(e => {
           console.error("Playback failed:", e);
-          setStatus(`Playback failed: ${e.message}`);
+          setStatus(`Playback error: ${e.message}`);
         });
     }
   }, [audioSrc]);
@@ -120,6 +125,12 @@ function App() {
   };
 
   const playFile = (file: Mp3Metadata) => {
+    if (file.is_locked) {
+      setStatus("File is locked by another process!");
+      alert("ファイルが他のプログラムによってロックされているため、再生できません。");
+      return;
+    }
+
     selectFile(file);
     const assetUrl = convertFileSrc(file.path);
     setAudioSrc(assetUrl);
@@ -134,7 +145,7 @@ function App() {
       } else {
         audioRef.current.play()
           .then(() => setIsPlaying(true))
-          .catch(e => console.error("Playback failed:", e));
+          .catch(e => setStatus(`Error: ${e.message}`));
       }
     }
   };
@@ -160,6 +171,21 @@ function App() {
     if (audioRef.current) {
       audioRef.current.volume = vol;
     }
+  };
+
+  const handleAudioError = (e: any) => {
+    const error = e.target.error;
+    console.error("Audio error:", error);
+    let message = "Unknown playback error";
+    if (error) {
+      switch (error.code) {
+        case 1: message = "Playback aborted"; break;
+        case 2: message = "Network error"; break;
+        case 3: message = "Audio decoding failed"; break;
+        case 4: message = "Source not supported (check path/permissions)"; break;
+      }
+    }
+    setStatus(`Error: ${message}`);
   };
 
   const formatTime = (time: number) => {
@@ -198,13 +224,14 @@ function App() {
 
   return (
     <div className="h-screen bg-base-100 text-base-content overflow-hidden font-sans flex flex-col">
-      {/* Hidden Audio Element - Always rendered */}
+      {/* Audio Element */}
       <audio
         ref={audioRef}
         src={audioSrc || undefined}
         loop={isLoop}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleTimeUpdate}
+        onError={handleAudioError}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         className="hidden"
@@ -235,7 +262,7 @@ function App() {
         </div>
 
         <div className="flex items-center gap-4">
-          {status && <span className="text-[10px] italic opacity-30">{status}</span>}
+          {status && <span className="text-[10px] italic opacity-50 font-medium text-primary">{status}</span>}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={`btn btn-xs btn-square ${isSidebarOpen ? "btn-primary" : "btn-ghost border border-base-content/20"}`}
