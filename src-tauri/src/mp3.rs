@@ -49,11 +49,12 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
     let abs_path = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
     let mut path_str = abs_path.to_string_lossy().to_string();
 
-    // Strip Windows UNC prefix if present
+    // Strip Windows UNC prefix if present (very important for convertFileSrc on Windows)
     if path_str.starts_with(r"\\?\") {
         path_str = path_str[4..].to_string();
     }
-    path_str = path_str.replace('\\', "/");
+    // Note: Do NOT replace backslashes with forward slashes yet,
+    // as convertFileSrc usually expects the platform's native path format.
 
     // Check if file is readable/locked
     let is_locked = fs::OpenOptions::new().read(true).open(&abs_path).is_err();

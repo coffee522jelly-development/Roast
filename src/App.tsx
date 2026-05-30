@@ -74,21 +74,29 @@ function App() {
     if (audioSrc && audioRef.current) {
       const audio = audioRef.current;
       console.log("Audio source changed:", audioSrc);
+      setStatus(`Loading: ${audioSrc.substring(0, 30)}...`);
+
+      const onCanPlay = () => {
+        startPlayback();
+        audio.removeEventListener("canplay", onCanPlay);
+      };
 
       // Stop current if playing
       if (playPromiseRef.current) {
         playPromiseRef.current.then(() => {
           audio.pause();
-          startPlayback();
+          audio.addEventListener("canplay", onCanPlay);
+          audio.load();
         }).catch(() => {
-          startPlayback();
+          audio.addEventListener("canplay", onCanPlay);
+          audio.load();
         });
       } else {
-        startPlayback();
+        audio.addEventListener("canplay", onCanPlay);
+        audio.load();
       }
 
       function startPlayback() {
-        audio.load();
         playPromiseRef.current = audio.play();
         playPromiseRef.current
           .then(() => {
@@ -104,6 +112,8 @@ function App() {
             playPromiseRef.current = null;
           });
       }
+
+      return () => audio.removeEventListener("canplay", onCanPlay);
     }
   }, [audioSrc]);
 

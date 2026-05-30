@@ -1,7 +1,8 @@
 import { Mp3Metadata } from "../App";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { Edit2, FolderTree, Clock } from "lucide-react";
+import { Edit2, FolderTree, Clock, Copy, Check } from "lucide-react";
+import { useState } from "react";
 
 interface Mp3TableProps {
   files: Mp3Metadata[];
@@ -13,6 +14,18 @@ interface Mp3TableProps {
 }
 
 export function Mp3Table({ files, onEdit, onOrganize, onSelect, onDoubleClick, selectedPath }: Mp3TableProps) {
+  const [copiedPath, setCopiedPath] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedPath(text);
+      setTimeout(() => setCopiedPath(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy!", err);
+    }
+  };
+
   const formatDuration = (seconds: number | null) => {
     if (seconds === null) return "-";
     const mins = Math.floor(seconds / 60);
@@ -47,7 +60,27 @@ export function Mp3Table({ files, onEdit, onOrganize, onSelect, onDoubleClick, s
                 onClick={(e) => { e.stopPropagation(); onSelect(file); }}
                 onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(file); }}
               >
-                <td className="p-4 align-middle max-w-xs truncate text-xs">{file.filename}</td>
+                <td className="p-4 align-middle max-w-xs truncate text-xs group/file">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate">{file.filename}</span>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-5 w-5 p-0 opacity-0 group-hover/file:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copyToClipboard(file.filename);
+                      }}
+                      title="Copy Filename"
+                    >
+                      {copiedPath === file.filename ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </div>
+                </td>
                 <td className="p-4 align-middle truncate max-w-[150px] text-xs">{file.title || "-"}</td>
                 <td className="p-4 align-middle truncate max-w-[150px] text-[10px] uppercase tracking-wider text-muted-foreground">
                   {file.artist || "-"}
