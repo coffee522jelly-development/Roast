@@ -1,4 +1,6 @@
 import { Mp3Metadata } from "../App";
+import { Card, CardContent } from "./ui/card";
+import { Music2 } from "lucide-react";
 
 interface DetailViewProps {
   file: Mp3Metadata | null;
@@ -8,7 +10,7 @@ interface DetailViewProps {
 export function DetailView({ file, artwork }: DetailViewProps) {
   if (!file) {
     return (
-      <div className="flex items-center justify-center h-full text-base-content/50 italic text-sm">
+      <div className="flex items-center justify-center h-full text-muted-foreground italic text-sm">
         Select a file to see details
       </div>
     );
@@ -30,8 +32,8 @@ export function DetailView({ file, artwork }: DetailViewProps) {
   };
 
   return (
-    <div className="p-4 flex flex-col gap-4 overflow-y-auto h-full">
-      <div className="aspect-square w-full bg-base-300 rounded-lg overflow-hidden flex items-center justify-center border border-base-content/10 shadow-inner">
+    <div className="p-4 flex flex-col gap-6 overflow-y-auto h-full">
+      <Card className="aspect-square w-full overflow-hidden flex items-center justify-center bg-muted border-none shadow-sm">
         {artwork ? (
           <img
             src={artwork}
@@ -39,46 +41,54 @@ export function DetailView({ file, artwork }: DetailViewProps) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-4xl text-base-content/20">🎵</span>
+          <Music2 className="h-16 w-16 text-muted-foreground/20" />
         )}
+      </Card>
+
+      <div className="space-y-4">
+        <section>
+          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 border-b pb-1">
+            Metadata
+          </h4>
+          <dl className="grid grid-cols-3 gap-y-3 text-xs">
+            <dt className="text-muted-foreground font-medium">Title</dt>
+            <dd className="col-span-2 truncate font-semibold">{file.title || "-"}</dd>
+
+            <dt className="text-muted-foreground font-medium">Artist</dt>
+            <dd className="col-span-2 truncate font-semibold">{file.artist || "-"}</dd>
+
+            <dt className="text-muted-foreground font-medium">Album</dt>
+            <dd className="col-span-2 truncate">{file.album || "-"}</dd>
+
+            <dt className="text-muted-foreground font-medium">Year</dt>
+            <dd className="col-span-2">{file.year || "-"}</dd>
+          </dl>
+        </section>
+
+        <section>
+          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 border-b pb-1">
+            Properties
+          </h4>
+          <dl className="grid grid-cols-3 gap-y-3 text-xs">
+            <dt className="text-muted-foreground font-medium">Length</dt>
+            <dd className="col-span-2 font-mono text-[11px]">{formatDuration(file.duration)}</dd>
+
+            <dt className="text-muted-foreground font-medium">Size</dt>
+            <dd className="col-span-2">{formatSize(file.size)}</dd>
+
+            <dt className="text-muted-foreground font-medium">Filename</dt>
+            <dd className="col-span-2 break-all text-[10px] leading-tight text-muted-foreground">
+              {file.filename}
+            </dd>
+          </dl>
+        </section>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="text-xs uppercase font-bold text-base-content/40 tracking-wider">Metadata</div>
-        <div className="grid grid-cols-3 gap-y-2 text-xs">
-          <div className="font-semibold">Title:</div>
-          <div className="col-span-2 truncate">{file.title || "-"}</div>
-
-          <div className="font-semibold">Artist:</div>
-          <div className="col-span-2 truncate">{file.artist || "-"}</div>
-
-          <div className="font-semibold">Album:</div>
-          <div className="col-span-2 truncate">{file.album || "-"}</div>
-
-          <div className="font-semibold">Year:</div>
-          <div className="col-span-2">{file.year || "-"}</div>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <div className="text-xs uppercase font-bold text-base-content/40 tracking-wider">File Details</div>
-        <div className="grid grid-cols-3 gap-y-2 text-xs">
-          <div className="font-semibold">Length:</div>
-          <div className="col-span-2">{formatDuration(file.duration)}</div>
-
-          <div className="font-semibold">Size:</div>
-          <div className="col-span-2">{formatSize(file.size)}</div>
-
-          <div className="font-semibold">Filename:</div>
-          <div className="col-span-2 break-all">{file.filename}</div>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-1 mt-auto">
-        <div className="text-[10px] uppercase font-bold text-base-content/30 tracking-wider">File Path</div>
-        <div className="text-[10px] break-all text-base-content/50 leading-tight">
+      <div className="mt-auto pt-6 border-t">
+        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">Location</span>
+        <p className="text-[9px] break-all text-muted-foreground/60 leading-relaxed font-mono">
           {file.path}
-        </div>
+        </p>
       </div>
     </div>
   );

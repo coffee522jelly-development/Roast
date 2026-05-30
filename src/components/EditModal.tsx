@@ -1,4 +1,8 @@
 import { Mp3Metadata } from "../App";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 interface EditModalProps {
   file: Mp3Metadata;
@@ -9,52 +13,55 @@ interface EditModalProps {
 
 export function EditModal({ file, onSave, onCancel, onChange }: EditModalProps) {
   return (
-    <div className="modal modal-open">
-      <div className="modal-box max-w-sm p-4">
-        <h3 className="font-bold text-lg mb-4">Edit Metadata</h3>
-        <div className="form-control gap-2">
-          <label className="label p-0">
-            <span className="label-text text-xs">Title</span>
-          </label>
-          <input
-            className="input input-bordered input-xs w-full"
-            value={file.title || ""}
-            onChange={(e) => onChange({ ...file, title: e.target.value })}
-          />
-
-          <label className="label p-0">
-            <span className="label-text text-xs">Artist</span>
-          </label>
-          <input
-            className="input input-bordered input-xs w-full"
-            value={file.artist || ""}
-            onChange={(e) => onChange({ ...file, artist: e.target.value })}
-          />
-
-          <label className="label p-0">
-            <span className="label-text text-xs">Album</span>
-          </label>
-          <input
-            className="input input-bordered input-xs w-full"
-            value={file.album || ""}
-            onChange={(e) => onChange({ ...file, album: e.target.value })}
-          />
-
-          <label className="label p-0">
-            <span className="label-text text-xs">Year</span>
-          </label>
-          <input
-            type="number"
-            className="input input-bordered input-xs w-full"
-            value={file.year || ""}
-            onChange={(e) => onChange({ ...file, year: parseInt(e.target.value) || null })}
-          />
+    <Dialog open={true} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Metadata</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="title" className="text-right">Title</Label>
+            <Input
+              id="title"
+              value={file.title || ""}
+              onChange={(e) => onChange({ ...file, title: e.target.value })}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="artist" className="text-right">Artist</Label>
+            <Input
+              id="artist"
+              value={file.artist || ""}
+              onChange={(e) => onChange({ ...file, artist: e.target.value })}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="album" className="text-right">Album</Label>
+            <Input
+              id="album"
+              value={file.album || ""}
+              onChange={(e) => onChange({ ...file, album: e.target.value })}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="year" className="text-right">Year</Label>
+            <Input
+              id="year"
+              type="number"
+              value={file.year || ""}
+              onChange={(e) => onChange({ ...file, year: e.target.value ? parseInt(e.target.value) : null })}
+              className="col-span-3"
+            />
+          </div>
         </div>
-        <div className="modal-action mt-6 gap-2">
-          <button className="btn btn-xs btn-primary" onClick={() => onSave(file)}>Save</button>
-          <button className="btn btn-xs" onClick={onCancel}>Cancel</button>
-        </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel}>Cancel</Button>
+          <Button onClick={() => onSave(file)}>Save Changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

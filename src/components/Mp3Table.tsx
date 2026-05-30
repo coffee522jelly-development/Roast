@@ -1,4 +1,7 @@
 import { Mp3Metadata } from "../App";
+import { Button } from "./ui/button";
+import { cn } from "../lib/utils";
+import { Edit2, FolderTree, Clock } from "lucide-react";
 
 interface Mp3TableProps {
   files: Mp3Metadata[];
@@ -18,47 +21,73 @@ export function Mp3Table({ files, onEdit, onOrganize, onSelect, onDoubleClick, s
   };
 
   return (
-    <div className="overflow-x-auto h-full relative">
-      <table className="table table-xs table-pin-rows">
-        <thead>
-          <tr>
-            <th>Filename</th>
-            <th>Title</th>
-            <th>Artist</th>
-            <th>Length</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.map((file) => (
-            <tr
-              key={file.path}
-              className={`hover cursor-pointer border-transparent ${selectedPath === file.path ? "bg-primary/10 text-primary font-medium" : ""}`}
-              onClick={(e) => { e.stopPropagation(); onSelect(file); }}
-              onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(file); }}
-            >
-              <td className="max-w-xs truncate opacity-80">{file.filename}</td>
-              <td className="truncate max-w-[150px]">{file.title || "-"}</td>
-              <td className="truncate max-w-[150px] opacity-60 uppercase text-[9px] tracking-widest">{file.artist || "-"}</td>
-              <td className="opacity-50 font-mono text-[10px]">{formatDuration(file.duration)}</td>
-              <td className="flex gap-1">
-                <button
-                  className="btn text-[8px] h-5 min-h-0 btn-ghost border border-base-content/10 hover:bg-primary hover:text-primary-content hover:border-transparent transition-all"
-                  onClick={(e) => { e.stopPropagation(); onEdit(file); }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="btn text-[8px] h-5 min-h-0 btn-ghost border border-primary/20 text-primary hover:bg-primary hover:text-primary-content hover:border-transparent transition-all"
-                  onClick={(e) => { e.stopPropagation(); onOrganize(file.path); }}
-                >
-                  Organize
-                </button>
-              </td>
+    <div className="rounded-md border h-full overflow-hidden flex flex-col">
+      <div className="relative flex-1 overflow-auto">
+        <table className="w-full caption-bottom text-sm">
+          <thead className="sticky top-0 bg-background border-b z-10">
+            <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Filename</th>
+              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Title</th>
+              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Artist</th>
+              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">
+                <Clock className="h-3 w-3 inline mr-1" />
+                Length
+              </th>
+              <th className="h-10 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="[&_tr:last-child]:border-0">
+            {files.map((file) => (
+              <tr
+                key={file.path}
+                className={cn(
+                  "border-b transition-colors hover:bg-muted/50 cursor-pointer",
+                  selectedPath === file.path && "bg-muted font-medium"
+                )}
+                onClick={(e) => { e.stopPropagation(); onSelect(file); }}
+                onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(file); }}
+              >
+                <td className="p-4 align-middle max-w-xs truncate text-xs">{file.filename}</td>
+                <td className="p-4 align-middle truncate max-w-[150px] text-xs">{file.title || "-"}</td>
+                <td className="p-4 align-middle truncate max-w-[150px] text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {file.artist || "-"}
+                </td>
+                <td className="p-4 align-middle font-mono text-[10px] text-muted-foreground">
+                  {formatDuration(file.duration)}
+                </td>
+                <td className="p-4 align-middle text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-6 w-6 p-0"
+                      onClick={(e) => { e.stopPropagation(); onEdit(file); }}
+                      title="Edit Tags"
+                    >
+                      <Edit2 className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      className="h-6 text-[10px]"
+                      onClick={(e) => { e.stopPropagation(); onOrganize(file.path); }}
+                    >
+                      <FolderTree className="h-3 w-3 mr-1" />
+                      Organize
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {files.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-40 text-muted-foreground text-sm gap-2">
+            <p>No MP3 files found.</p>
+            <p className="text-xs">Check settings to set your music folder.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

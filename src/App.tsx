@@ -4,6 +4,19 @@ import { Mp3Table } from "./components/Mp3Table";
 import { EditModal } from "./components/EditModal";
 import { DetailView } from "./components/DetailView";
 import { SettingsModal } from "./components/SettingsModal";
+import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
+import { Slider } from "./components/ui/slider";
+import {
+  Settings as SettingsIcon,
+  Info,
+  Search,
+  Play,
+  Pause,
+  Repeat,
+  Volume2,
+  Music4
+} from "lucide-react";
 import "./App.css";
 
 export interface Mp3Metadata {
@@ -45,6 +58,7 @@ function App() {
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playPromiseRef = useRef<Promise<void> | null>(null);
 
   // Disable right-click globally
   useEffect(() => {
@@ -58,17 +72,38 @@ function App() {
   // Handle audio source changes and autoplay
   useEffect(() => {
     if (audioSrc && audioRef.current) {
+      const audio = audioRef.current;
       console.log("Audio source changed:", audioSrc);
-      audioRef.current.load();
-      audioRef.current.play()
-        .then(() => {
-          setIsPlaying(true);
-          setStatus("Playing...");
-        })
-        .catch(e => {
-          console.error("Playback failed:", e);
-          setStatus(`Playback error: ${e.message}`);
+
+      // Stop current if playing
+      if (playPromiseRef.current) {
+        playPromiseRef.current.then(() => {
+          audio.pause();
+          startPlayback();
+        }).catch(() => {
+          startPlayback();
         });
+      } else {
+        startPlayback();
+      }
+
+      function startPlayback() {
+        audio.load();
+        playPromiseRef.current = audio.play();
+        playPromiseRef.current
+          .then(() => {
+            setIsPlaying(true);
+            setStatus("Playing...");
+            playPromiseRef.current = null;
+          })
+          .catch(e => {
+            if (e.name !== "AbortError") {
+              console.error("Playback failed:", e);
+              setStatus(`Playback error: ${e.message}`);
+            }
+            playPromiseRef.current = null;
+          });
+      }
     }
   }, [audioSrc]);
 
@@ -137,15 +172,31 @@ function App() {
     setIsSidebarOpen(true);
   };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (audioRef.current) {
+      const audio = audioRef.current;
       if (isPlaying) {
-        audioRef.current.pause();
+        if (playPromiseRef.current) {
+          try {
+            await playPromiseRef.current;
+          } catch (e) {
+            // Ignore abort or other play errors
+          }
+        }
+        audio.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current.play()
-          .then(() => setIsPlaying(true))
-          .catch(e => setStatus(`Error: ${e.message}`));
+        try {
+          playPromiseRef.current = audio.play();
+          await playPromiseRef.current;
+          setIsPlaying(true);
+          playPromiseRef.current = null;
+        } catch (e: any) {
+          if (e.name !== "AbortError") {
+            setStatus(`Error: ${e.message}`);
+          }
+          playPromiseRef.current = null;
+        }
       }
     }
   };
@@ -157,16 +208,16 @@ function App() {
     }
   };
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = parseFloat(e.target.value);
+  const handleSeek = (value: number[]) => {
+    const time = value[0];
     if (audioRef.current) {
       audioRef.current.currentTime = time;
       setCurrentTime(time);
     }
   };
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const vol = parseFloat(e.target.value);
+  const handleVolumeChange = (value: number[]) => {
+    const vol = value[0];
     setVolume(vol);
     if (audioRef.current) {
       audioRef.current.volume = vol;
@@ -223,7 +274,7 @@ function App() {
   }, [mp3Files]);
 
   return (
-    <div className="h-screen bg-base-100 text-base-content overflow-hidden font-sans flex flex-col">
+    <div className="h-screen bg-background text-foreground overflow-hidden font-sans flex flex-col selection:bg-primary selection:text-primary-foreground">
       {/* Audio Element */}
       <audio
         ref={audioRef}
@@ -238,43 +289,54 @@ function App() {
       />
 
       {/* Header */}
-      <div className="navbar bg-base-200 border-b border-base-content/10 px-4 min-h-0 h-12 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <h1 className="text-sm font-black tracking-tighter uppercase opacity-50">Roast</h1>
-          <button className="btn btn-xs btn-ghost border border-base-content/20" onClick={() => setShowSettings(true)}>
+      <header className="h-14 border-b flex items-center justify-between px-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+             <Music4 className="h-5 w-5 text-primary" />
+             <h1 className="text-sm font-bold tracking-[0.2em] uppercase">Roast</h1>
+          </div>
+          <Button variant="ghost" size="xs" className="h-7 border bg-muted/30" onClick={() => setShowSettings(true)}>
+            <SettingsIcon className="h-3 w-3 mr-2" />
             Settings
-          </button>
+          </Button>
           {settings.defaultFolder && (
-            <span className="text-[10px] opacity-30 truncate max-w-[200px]">
+            <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono opacity-60">
               {settings.defaultFolder}
             </span>
           )}
         </div>
 
-        <div className="flex-1 max-w-sm mx-4">
-          <input
+        <div className="flex-1 max-w-md mx-8 relative group">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground transition-colors group-focus-within:text-primary" />
+          <Input
             type="text"
-            placeholder="Search library..."
-            className="input input-bordered input-xs w-full bg-base-300 border-transparent focus:border-primary/30 transition-all"
+            placeholder="Search your library..."
+            className="pl-8 h-8 bg-muted/40 border-transparent focus:bg-background focus:ring-1 focus:ring-primary/20 transition-all text-xs"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
         <div className="flex items-center gap-4">
-          {status && <span className="text-[10px] italic opacity-50 font-medium text-primary">{status}</span>}
-          <button
+          {status && (
+            <div className="px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
+               <span className="text-[9px] font-bold uppercase tracking-tighter text-primary">{status}</span>
+            </div>
+          )}
+          <Button
+            variant={isSidebarOpen ? "secondary" : "ghost"}
+            size="xs"
+            className="h-8 w-8 p-0 border"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className={`btn btn-xs btn-square ${isSidebarOpen ? "btn-primary" : "btn-ghost border border-base-content/20"}`}
           >
-            <span className="text-[10px]">INFO</span>
-          </button>
+            <Info className="h-4 w-4" />
+          </Button>
         </div>
-      </div>
+      </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <main className="flex flex-1 overflow-hidden">
         {/* Main Area */}
-        <div className="flex-1 overflow-hidden p-2">
+        <div className="flex-1 overflow-hidden p-4">
           <Mp3Table
             files={filteredFiles}
             onEdit={(file) => setEditingFile(file)}
@@ -287,68 +349,68 @@ function App() {
 
         {/* Sidebar (Detail View) */}
         {isSidebarOpen && (
-          <div className="w-80 h-full bg-base-200 border-l border-base-content/10 shadow-2xl overflow-hidden transition-all duration-300">
+          <aside className="w-80 h-full border-l bg-muted/10 overflow-hidden transition-all duration-300">
             <DetailView file={selectedFile} artwork={selectedArtwork} />
-          </div>
+          </aside>
         )}
-      </div>
+      </main>
 
-      {/* Enhanced Player Bar */}
-      {selectedFile && (
-        <div className="bg-base-300 border-t border-base-content/10 flex flex-col p-2 gap-1 px-4">
-          {/* Seekbar */}
-          <div className="flex items-center gap-2 w-full">
-            <span className="text-[9px] font-mono opacity-50 w-8">{formatTime(currentTime)}</span>
-            <input
-              type="range"
-              min="0"
-              max={duration || 0}
-              step="0.1"
-              value={currentTime}
-              onChange={handleSeek}
-              className="range range-primary range-xs h-1 flex-1"
-            />
-            <span className="text-[9px] font-mono opacity-50 w-8">{formatTime(duration)}</span>
-          </div>
-
-          <div className="flex items-center gap-6 h-10">
-             <div className="flex items-center gap-3">
-               <button className="btn btn-circle btn-sm btn-primary" onClick={togglePlay}>
-                  {isPlaying ? "⏸" : "▶"}
-               </button>
-
-               <div className="flex items-center gap-2 bg-base-100 px-3 py-1 rounded-full border border-base-content/5 shadow-inner">
-                  <span className="text-[9px] uppercase font-bold opacity-50 tracking-wider">Loop</span>
-                  <input
-                    type="checkbox"
-                    className="toggle toggle-primary toggle-xs"
-                    checked={isLoop}
-                    onChange={(e) => setIsLoop(e.target.checked)}
-                  />
-               </div>
-             </div>
-
-             <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-xs font-bold truncate tracking-tight">{selectedFile.title || selectedFile.filename}</span>
-                <span className="text-[10px] opacity-50 uppercase tracking-widest">{selectedFile.artist || "Unknown Artist"}</span>
-             </div>
-
-             {/* Volume Control */}
-             <div className="flex items-center gap-2 w-32">
-                <span className="text-[10px] opacity-50 font-bold uppercase tracking-tighter">Vol</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  className="range range-xs h-1 flex-1"
-                />
-             </div>
-          </div>
+      {/* Player Bar */}
+      <footer className="h-24 border-t bg-background/95 backdrop-blur px-8 flex flex-col justify-center gap-3">
+        {/* Seekbar */}
+        <div className="flex items-center gap-3 w-full">
+          <span className="text-[10px] font-mono text-muted-foreground w-10 text-right">{formatTime(currentTime)}</span>
+          <Slider
+            min={0}
+            max={duration || 0}
+            step={0.1}
+            value={[currentTime]}
+            onValueChange={handleSeek}
+            className="flex-1"
+          />
+          <span className="text-[10px] font-mono text-muted-foreground w-10">{formatTime(duration)}</span>
         </div>
-      )}
+
+        <div className="flex items-center justify-between">
+           <div className="flex items-center gap-4 w-[300px]">
+             <Button variant="default" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={togglePlay}>
+                {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+             </Button>
+
+             <Button
+                variant={isLoop ? "secondary" : "ghost"}
+                size="icon"
+                className={isLoop ? "text-primary bg-primary/10 border-primary/20" : "text-muted-foreground"}
+                onClick={() => setIsLoop(!isLoop)}
+                title="Loop Track"
+              >
+                <Repeat className="h-4 w-4" />
+             </Button>
+
+             <div className="flex flex-col min-w-0">
+                <span className="text-xs font-bold truncate leading-none mb-1">
+                  {selectedFile ? (selectedFile.title || selectedFile.filename) : "No Track Selected"}
+                </span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">
+                  {selectedFile?.artist || "—"}
+                </span>
+             </div>
+           </div>
+
+           {/* Volume Control */}
+           <div className="flex items-center gap-3 w-[200px]">
+              <Volume2 className="h-4 w-4 text-muted-foreground" />
+              <Slider
+                min={0}
+                max={1}
+                step={0.01}
+                value={[volume]}
+                onValueChange={handleVolumeChange}
+                className="w-24"
+              />
+           </div>
+        </div>
+      </footer>
 
       {editingFile && (
         <EditModal

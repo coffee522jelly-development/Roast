@@ -1,4 +1,9 @@
 import { open } from "@tauri-apps/plugin-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { FolderOpen } from "lucide-react";
 
 interface Settings {
   defaultFolder: string | null;
@@ -11,50 +16,44 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ settings, onSave, onClose }: SettingsModalProps) {
-  const selectFolder = async () => {
+  const pickFolder = async () => {
     const selected = await open({
       directory: true,
       multiple: false,
     });
-    if (selected && typeof selected === "string") {
+    if (selected && typeof selected === 'string') {
       onSave({ ...settings, defaultFolder: selected });
     }
   };
 
   return (
-    <div className="modal modal-open">
-      <div className="modal-box max-w-md p-6">
-        <h3 className="font-bold text-lg mb-6">Settings</h3>
-
-        <div className="form-control w-full gap-4">
-          <div>
-            <label className="label p-0 mb-1">
-              <span className="label-text font-bold">Default Music Folder</span>
-            </label>
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Application Settings</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <Label>Default Music Folder</Label>
             <div className="flex gap-2">
-              <input
-                type="text"
+              <Input
                 readOnly
-                placeholder="No folder selected"
-                className="input input-bordered input-xs flex-1"
-                value={settings.defaultFolder || ""}
+                value={settings.defaultFolder || "No folder selected"}
+                className="bg-muted text-xs"
               />
-              <button className="btn btn-xs btn-outline" onClick={selectFolder}>
-                Browse
-              </button>
+              <Button size="icon" variant="outline" onClick={pickFolder}>
+                <FolderOpen className="h-4 w-4" />
+              </Button>
             </div>
-            <p className="text-[10px] opacity-50 mt-1">
+            <p className="text-[10px] text-muted-foreground">
               This folder will be scanned automatically when the app starts.
             </p>
           </div>
         </div>
-
-        <div className="modal-action mt-8">
-          <button className="btn btn-xs btn-primary px-6" onClick={onClose}>
-            Done
-          </button>
-        </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button onClick={onClose}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
