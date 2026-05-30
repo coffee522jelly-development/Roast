@@ -43,13 +43,13 @@ export function Mp3Table({ files, onEdit, onOrganize, onSelect, onDoubleClick, s
               <td className="opacity-50 font-mono text-[10px]">{formatDuration(file.duration)}</td>
               <td className="flex gap-1">
                 <button
-                  className="btn btn-[8px] h-5 min-h-0 btn-ghost border border-base-content/10 hover:bg-primary hover:text-primary-content hover:border-transparent transition-all"
+                  className="btn text-[8px] h-5 min-h-0 btn-ghost border border-base-content/10 hover:bg-primary hover:text-primary-content hover:border-transparent transition-all"
                   onClick={(e) => { e.stopPropagation(); onEdit(file); }}
                 >
                   Edit
                 </button>
                 <button
-                  className="btn btn-[8px] h-5 min-h-0 btn-ghost border border-primary/20 text-primary hover:bg-primary hover:text-primary-content hover:border-transparent transition-all"
+                  className="btn text-[8px] h-5 min-h-0 btn-ghost border border-primary/20 text-primary hover:bg-primary hover:text-primary-content hover:border-transparent transition-all"
                   onClick={(e) => { e.stopPropagation(); onOrganize(file.path); }}
                 >
                   Organize
