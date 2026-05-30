@@ -1,8 +1,9 @@
 import { Mp3Metadata } from "../App";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { Edit2, FolderTree, Clock, Copy, Check } from "lucide-react";
+import { Edit2, FolderTree, Clock, Copy, Check, ExternalLink } from "lucide-react";
 import { useState } from "react";
+import { revealItemInDir } from "@tauri-apps/plugin-opener";
 
 interface Mp3TableProps {
   files: Mp3Metadata[];
@@ -90,6 +91,15 @@ export function Mp3Table({ files, onEdit, onOrganize, onSelect, onDoubleClick, s
                 </td>
                 <td className="p-4 align-middle text-right">
                   <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-6 w-6 p-0"
+                      onClick={(e) => { e.stopPropagation(); revealItemInDir(file.path); }}
+                      title="Open in Folder"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="xs"
