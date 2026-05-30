@@ -1,5 +1,5 @@
 import { Mp3Metadata } from "../App";
-import { Card, CardContent } from "./ui/card";
+import { Card } from "./ui/card";
 import { Music2 } from "lucide-react";
 
 interface DetailViewProps {
