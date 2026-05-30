@@ -1,6 +1,8 @@
 import { Mp3Metadata } from "../App";
 import { Card } from "./ui/card";
-import { Music2 } from "lucide-react";
+import { Button } from "./ui/button";
+import { Music2, Copy, Check } from "lucide-react";
+import { useState } from "react";
 
 interface DetailViewProps {
   file: Mp3Metadata | null;
@@ -8,6 +10,19 @@ interface DetailViewProps {
 }
 
 export function DetailView({ file, artwork }: DetailViewProps) {
+  const [copied, setCopied] = useState(false);
+
+  const copyFilename = async () => {
+    if (!file) return;
+    try {
+      await navigator.clipboard.writeText(file.filename);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
   if (!file) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground italic text-sm">
@@ -77,8 +92,23 @@ export function DetailView({ file, artwork }: DetailViewProps) {
             <dd className="col-span-2">{formatSize(file.size)}</dd>
 
             <dt className="text-muted-foreground font-medium">Filename</dt>
-            <dd className="col-span-2 break-all text-[10px] leading-tight text-muted-foreground">
-              {file.filename}
+            <dd className="col-span-2 flex items-start gap-2 group/copy">
+              <span className="break-all text-[10px] leading-tight text-muted-foreground flex-1">
+                {file.filename}
+              </span>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="h-5 w-5 p-0 opacity-0 group-hover/copy:opacity-100 transition-opacity"
+                onClick={copyFilename}
+                title="Copy Filename"
+              >
+                {copied ? (
+                  <Check className="h-3 w-3 text-green-500" />
+                ) : (
+                  <Copy className="h-3 w-3" />
+                )}
+              </Button>
             </dd>
           </dl>
         </section>

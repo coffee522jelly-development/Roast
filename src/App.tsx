@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { invoke, convertFileSrc } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
+import { readFile } from "@tauri-apps/plugin-fs";
 import { Mp3Table } from "./components/Mp3Table";
 import { EditModal } from "./components/EditModal";
 import { DetailView } from "./components/DetailView";
@@ -74,7 +75,23 @@ function App() {
     if (audioSrc && audioRef.current) {
       const audio = audioRef.current;
       console.log("Audio source changed:", audioSrc);
-      setStatus(`Loading: ${audioSrc.substring(0, 30)}...`);
+
+      const startPlayback = () => {
+        playPromiseRef.current = audio.play();
+        playPromiseRef.current
+          .then(() => {
+            setIsPlaying(true);
+            setStatus("Playing...");
+            playPromiseRef.current = null;
+          })
+          .catch(e => {
+            if (e.name !== "AbortError") {
+              console.error("Playback failed:", e);
+              setStatus(`Playback error: ${e.message}`);
+            }
+            playPromiseRef.current = null;
+          });
+      };
 
       const onCanPlay = () => {
         startPlayback();
@@ -96,24 +113,9 @@ function App() {
         audio.load();
       }
 
-      function startPlayback() {
-        playPromiseRef.current = audio.play();
-        playPromiseRef.current
-          .then(() => {
-            setIsPlaying(true);
-            setStatus("Playing...");
-            playPromiseRef.current = null;
-          })
-          .catch(e => {
-            if (e.name !== "AbortError") {
-              console.error("Playback failed:", e);
-              setStatus(`Playback error: ${e.message}`);
-            }
-            playPromiseRef.current = null;
-          });
-      }
-
-      return () => audio.removeEventListener("canplay", onCanPlay);
+      return () => {
+        audio.removeEventListener("canplay", onCanPlay);
+      };
     }
   }, [audioSrc]);
 
@@ -169,7 +171,7 @@ function App() {
     }
   };
 
-  const playFile = (file: Mp3Metadata) => {
+  const playFile = async (file: Mp3Metadata) => {
     if (file.is_locked) {
       setStatus("File is locked by another process!");
       alert("ファイルが他のプログラムによってロックされているため、再生できません。");
@@ -177,9 +179,26 @@ function App() {
     }
 
     selectFile(file);
-    const assetUrl = convertFileSrc(file.path);
-    setAudioSrc(assetUrl);
     setIsSidebarOpen(true);
+
+    try {
+      setStatus("Loading file data...");
+      // Alternative playback method: Read file as bytes and create a Blob URL
+      // This bypasses protocol issues and provides a direct browser source
+      const contents = await readFile(file.path);
+      const blob = new Blob([contents], { type: "audio/mpeg" });
+
+      // Revoke old URL to prevent memory leaks
+      if (audioSrc && audioSrc.startsWith("blob:")) {
+        URL.revokeObjectURL(audioSrc);
+      }
+
+      const blobUrl = URL.createObjectURL(blob);
+      setAudioSrc(blobUrl);
+    } catch (err) {
+      console.error("Error reading file for playback:", err);
+      setStatus("Error loading file data");
+    }
   };
 
   const togglePlay = async () => {
