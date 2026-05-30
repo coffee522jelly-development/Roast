@@ -22,11 +22,19 @@ pub struct Mp3Metadata {
 #[tauri::command]
 pub fn get_mp3_metadata(dir_path: String) -> Result<Vec<Mp3Metadata>, String> {
     let mut results = Vec::new();
-    for entry in WalkDir::new(&dir_path).into_iter().filter_map(|e| e.ok()) {
+    let root_path = Path::new(&dir_path);
+
+    if !root_path.exists() {
+        return Err(format!("The directory does not exist: {}", dir_path));
+    }
+
+    for entry in WalkDir::new(root_path).into_iter().filter_map(|e| e.ok()) {
         let path = entry.path();
-        if path.extension().and_then(|s| s.to_str()).map(|s| s.to_lowercase()) == Some("mp3".to_string()) {
-            let metadata = read_metadata(path)?;
-            results.push(metadata);
+        if path.is_file() && path.extension().and_then(|s| s.to_str()).map(|s| s.to_lowercase()) == Some("mp3".to_string()) {
+            match read_metadata(path) {
+                Ok(metadata) => results.push(metadata),
+                Err(e) => eprintln!("Error reading metadata for {:?}: {}", path, e),
+            }
         }
     }
     Ok(results)
@@ -53,8 +61,9 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
     if path_str.starts_with(r"\\?\") {
         path_str = path_str[4..].to_string();
     }
-    // Note: Do NOT replace backslashes with forward slashes yet,
-    // as convertFileSrc usually expects the platform's native path format.
+
+    // Use forward slashes for consistency in the frontend/convertFileSrc
+    path_str = path_str.replace('\\', "/");
 
     // Check if file is readable/locked
     let is_locked = fs::OpenOptions::new().read(true).open(&abs_path).is_err();

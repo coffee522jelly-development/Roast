@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { readFile } from "@tauri-apps/plugin-fs";
+import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { Mp3Table } from "./components/Mp3Table";
 import { EditModal } from "./components/EditModal";
 import { DetailView } from "./components/DetailView";
@@ -182,22 +181,13 @@ function App() {
     setIsSidebarOpen(true);
 
     try {
-      setStatus("Loading file data...");
-      // Alternative playback method: Read file as bytes and create a Blob URL
-      // This bypasses protocol issues and provides a direct browser source
-      const contents = await readFile(file.path);
-      const blob = new Blob([contents], { type: "audio/mpeg" });
-
-      // Revoke old URL to prevent memory leaks
-      if (audioSrc && audioSrc.startsWith("blob:")) {
-        URL.revokeObjectURL(audioSrc);
-      }
-
-      const blobUrl = URL.createObjectURL(blob);
-      setAudioSrc(blobUrl);
-    } catch (err) {
-      console.error("Error reading file for playback:", err);
-      setStatus("Error loading file data");
+      setStatus("Preparing...");
+      const assetUrl = convertFileSrc(file.path);
+      console.log("Converted path to asset URL:", assetUrl);
+      setAudioSrc(assetUrl);
+    } catch (err: any) {
+      console.error("Error converting file source:", err);
+      setStatus(`FAILED Convt: ${err.message || err}`);
     }
   };
 
