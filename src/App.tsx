@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { invoke, convertFileSrc } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
 import { Mp3Table } from "./components/Mp3Table";
 import { EditModal } from "./components/EditModal";
 import { DetailView } from "./components/DetailView";
