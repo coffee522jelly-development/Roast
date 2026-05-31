@@ -118,43 +118,63 @@ pub fn update_mp3_metadata(path: String, metadata: Mp3Metadata) -> Result<(), St
 }
 
 #[tauri::command]
-pub fn organize_mp3(path: String) -> Result<String, String> {
+pub fn organize_mp3(path: String, rule: String) -> Result<String, String> {
     let original_path = PathBuf::from(&path);
     let filename = original_path.file_name()
         .and_then(|s| s.to_str())
-        .ok_or("Invalid filename")?;
+        .ok_or("無効なファイル名です")?;
 
-    // Try to split filename by " - " to find artist
-    let parts: Vec<&str> = filename.splitn(2, " - ").collect();
-    if parts.len() < 2 {
-        return Err("Filename does not contain ' - ' separator".to_string());
-    }
-
-    let artist = parts[0].trim();
-    let rest = parts[1].trim();
-
-    let parent_dir = original_path.parent().ok_or("Could not find parent directory")?;
-    let artist_dir = parent_dir.join(artist);
-
-    if !artist_dir.exists() {
-        fs::create_dir(&artist_dir).map_err(|e| e.to_string())?;
-    }
-
-    let new_path = artist_dir.join(rest);
-    fs::rename(&original_path, &new_path).map_err(|e| e.to_string())?;
-
-    // Update ID3 tags
-    let mut tag = Tag::read_from_path(&new_path).unwrap_or_default();
-    tag.set_artist(artist);
-
-    let title = Path::new(rest)
+    let stem = Path::new(filename)
         .file_stem()
         .and_then(|s| s.to_str())
-        .unwrap_or(rest);
-    tag.set_title(title);
+        .ok_or("ファイル名の取得に失敗しました")?;
+
+    let (artist, title) = match rule.as_str() {
+        "artist_dash_song" => {
+            let parts: Vec<&str> = stem.splitn(2, " - ").collect();
+            if parts.len() < 2 {
+                return Err("ファイル名に ' - ' が含まれていません".to_string());
+            }
+            (parts[0].trim().to_string(), parts[1].trim().to_string())
+        }
+        "artist_space_song" => {
+            let parts: Vec<&str> = stem.splitn(2, ' ').collect();
+            if parts.len() < 2 {
+                return Err("ファイル名にスペースが含まれていません".to_string());
+            }
+            (parts[0].trim().to_string(), parts[1].trim().to_string())
+        }
+        "song_space_artist" => {
+            let parts: Vec<&str> = stem.rsplitn(2, ' ').collect();
+            if parts.len() < 2 {
+                return Err("ファイル名にスペースが含まれていません".to_string());
+            }
+            // rsplitn returns [artist, song]
+            (parts[0].trim().to_string(), parts[1].trim().to_string())
+        }
+        _ => return Err("不明な整理ルールです".to_string()),
+    };
+
+    let parent_dir = original_path.parent().ok_or("親ディレクトリが見つかりませんでした")?;
+    let artist_dir = parent_dir.join(&artist);
+
+    if !artist_dir.exists() {
+        fs::create_dir_all(&artist_dir).map_err(|e| format!("フォルダ作成失敗: {}", e))?;
+    }
+
+    let extension = original_path.extension().and_then(|s| s.to_str()).unwrap_or("mp3");
+    let new_filename = format!("{}.{}", title, extension);
+    let new_path = artist_dir.join(new_filename);
+
+    fs::rename(&original_path, &new_path).map_err(|e| format!("移動失敗: {}", e))?;
+
+    // Update ID3 tags automatically
+    let mut tag = Tag::read_from_path(&new_path).unwrap_or_default();
+    tag.set_artist(&artist);
+    tag.set_title(&title);
 
     tag.write_to_path(&new_path, id3::Version::Id3v24)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("タグ更新失敗: {}", e))?;
 
     Ok(new_path.to_string_lossy().to_string())
 }
@@ -171,7 +191,7 @@ mod tests {
         let file_path = dir.path().join("Artist Name - Song Title.mp3");
         File::create(&file_path).unwrap();
 
-        let result = organize_mp3(file_path.to_string_lossy().to_string()).unwrap();
+        let result = organize_mp3(file_path.to_string_lossy().to_string(), "artist_dash_song".to_string()).unwrap();
 
         let expected_path = dir.path().join("Artist Name").join("Song Title.mp3");
         assert!(expected_path.exists());

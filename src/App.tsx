@@ -42,6 +42,8 @@ function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [sortField, setSortField] = useState<"filename" | "artist">("filename");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const [mp3Files, setMp3Files] = useState<Mp3Metadata[]>([]);
   const [editingFile, setEditingFile] = useState<Mp3Metadata | null>(null);
@@ -80,13 +82,13 @@ function App() {
         playPromiseRef.current
           .then(() => {
             setIsPlaying(true);
-            setStatus("Playing...");
+            setStatus("再生中...");
             playPromiseRef.current = null;
           })
           .catch(e => {
             if (e.name !== "AbortError") {
               console.error("Playback failed:", e);
-              setStatus(`Playback error: ${e.message}`);
+              setStatus(`再生エラー: ${e.message}`);
             }
             playPromiseRef.current = null;
           });
@@ -129,33 +131,33 @@ function App() {
     try {
       const files: Mp3Metadata[] = await invoke("get_mp3_metadata", { dirPath: dir });
       setMp3Files(files);
-      setStatus(`Loaded ${files.length} files`);
+      setStatus(`${files.length} 個のファイルを読み込みました`);
     } catch (err) {
       console.error(err);
-      setStatus("Error loading files");
+      setStatus("ファイルの読み込みに失敗しました");
     }
   }
 
-  async function organizeFile(path: string) {
+  async function organizeFile(path: string, rule: string) {
     try {
-      await invoke("organize_mp3", { path });
-      setStatus("File organized");
+      await invoke("organize_mp3", { path, rule });
+      setStatus("整理が完了しました");
       if (settings.defaultFolder) loadMp3Files(settings.defaultFolder);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setStatus(`Error organizing file: ${err}`);
+      setStatus(`整理失敗: ${err.message || err}`);
     }
   }
 
   async function updateMetadata(file: Mp3Metadata) {
     try {
       await invoke("update_mp3_metadata", { path: file.path, metadata: file });
-      setStatus("Metadata updated");
+      setStatus("メタデータを更新しました");
       setEditingFile(null);
       if (settings.defaultFolder) loadMp3Files(settings.defaultFolder);
     } catch (err) {
       console.error(err);
-      setStatus("Error updating metadata");
+      setStatus("メタデータの更新に失敗しました");
     }
   }
 
@@ -172,7 +174,7 @@ function App() {
 
   const playFile = async (file: Mp3Metadata) => {
     if (file.is_locked) {
-      setStatus("File is locked by another process!");
+      setStatus("ファイルがロックされています");
       alert("ファイルが他のプログラムによってロックされているため、再生できません。");
       return;
     }
@@ -181,13 +183,13 @@ function App() {
     setIsSidebarOpen(true);
 
     try {
-      setStatus("Preparing...");
+      setStatus("準備中...");
       const assetUrl = convertFileSrc(file.path);
       console.log("Converted path to asset URL:", assetUrl);
       setAudioSrc(assetUrl);
     } catch (err: any) {
       console.error("Error converting file source:", err);
-      setStatus(`FAILED Convt: ${err.message || err}`);
+      setStatus(`読み込み失敗: ${err.message || err}`);
     }
   };
 
@@ -246,16 +248,16 @@ function App() {
   const handleAudioError = (e: any) => {
     const error = e.target.error;
     console.error("Audio error:", error);
-    let message = "Unknown playback error";
+    let message = "不明な再生エラー";
     if (error) {
       switch (error.code) {
-        case 1: message = "Playback aborted"; break;
-        case 2: message = "Network error"; break;
-        case 3: message = "Audio decoding failed"; break;
-        case 4: message = "Source not supported (check path/permissions)"; break;
+        case 1: message = "再生が中断されました"; break;
+        case 2: message = "ネットワークエラー"; break;
+        case 3: message = "オーディオのデコードに失敗しました"; break;
+        case 4: message = "サポートされていない形式か、権限がありません"; break;
       }
     }
-    setStatus(`Error: ${message}`);
+    setStatus(`エラー: ${message}`);
   };
 
   const formatTime = (time: number) => {
@@ -266,15 +268,38 @@ function App() {
   };
 
   const filteredFiles = useMemo(() => {
-    if (!searchQuery) return mp3Files;
-    const q = searchQuery.toLowerCase();
-    return mp3Files.filter(f =>
-      (f.filename?.toLowerCase() ?? "").includes(q) ||
-      (f.title?.toLowerCase() ?? "").includes(q) ||
-      (f.artist?.toLowerCase() ?? "").includes(q) ||
-      (f.album?.toLowerCase() ?? "").includes(q)
-    );
-  }, [mp3Files, searchQuery]);
+    let result = [...mp3Files];
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(f =>
+        (f.filename?.toLowerCase() ?? "").includes(q) ||
+        (f.title?.toLowerCase() ?? "").includes(q) ||
+        (f.artist?.toLowerCase() ?? "").includes(q) ||
+        (f.album?.toLowerCase() ?? "").includes(q)
+      );
+    }
+
+    result.sort((a, b) => {
+      let valA = (sortField === "filename" ? a.filename : (a.artist || "")).toLowerCase();
+      let valB = (sortField === "filename" ? b.filename : (b.artist || "")).toLowerCase();
+
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return result;
+  }, [mp3Files, searchQuery, sortField, sortOrder]);
+
+  const toggleSort = (field: "filename" | "artist") => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
 
   const updateSettings = (newSettings: Settings) => {
     setSettings(newSettings);
@@ -316,7 +341,7 @@ function App() {
           </div>
           <Button variant="ghost" size="xs" className="h-7 border bg-muted/30" onClick={() => setShowSettings(true)}>
             <SettingsIcon className="h-3 w-3 mr-2" />
-            Settings
+            設定
           </Button>
           {settings.defaultFolder && (
             <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono opacity-60">
@@ -329,7 +354,7 @@ function App() {
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground transition-colors group-focus-within:text-primary" />
           <Input
             type="text"
-            placeholder="Search your library..."
+            placeholder="ライブラリを検索..."
             className="pl-8 h-8 bg-muted/40 border-transparent focus:bg-background focus:ring-1 focus:ring-primary/20 transition-all text-xs"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -363,6 +388,9 @@ function App() {
             onSelect={selectFile}
             onDoubleClick={playFile}
             selectedPath={selectedFile?.path || null}
+            onSort={toggleSort}
+            sortField={sortField}
+            sortOrder={sortOrder}
           />
         </div>
 
@@ -392,7 +420,13 @@ function App() {
 
         <div className="flex items-center justify-between">
            <div className="flex items-center gap-4 w-[300px]">
-             <Button variant="default" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={togglePlay}>
+             <Button
+                variant="default"
+                size="icon"
+                className="h-10 w-10 rounded-full shadow-lg"
+                onClick={togglePlay}
+                disabled={status.startsWith("エラー") || status.startsWith("読み込み失敗")}
+              >
                 {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
              </Button>
 
@@ -408,7 +442,7 @@ function App() {
 
              <div className="flex flex-col min-w-0">
                 <span className="text-xs font-bold truncate leading-none mb-1">
-                  {selectedFile ? (selectedFile.title || selectedFile.filename) : "No Track Selected"}
+                  {selectedFile ? (selectedFile.title || selectedFile.filename) : "曲が選択されていません"}
                 </span>
                 <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">
                   {selectedFile?.artist || "—"}
