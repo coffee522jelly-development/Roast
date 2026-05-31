@@ -183,13 +183,21 @@ function App() {
     setIsSidebarOpen(true);
 
     try {
-      setStatus("準備中...");
-      const assetUrl = convertFileSrc(file.path);
-      console.log("Converted path to asset URL:", assetUrl);
-      setAudioSrc(assetUrl);
+      setStatus("読み込み中...");
+      // Re-implementing Blob playback but via a dedicated Rust command
+      // to ensure we bypass any potential tauri-plugin-fs or protocol restrictions.
+      const bytes: number[] = await invoke("read_audio_file", { path: file.path });
+      const blob = new Blob([new Uint8Array(bytes)], { type: "audio/mpeg" });
+
+      if (audioSrc && audioSrc.startsWith("blob:")) {
+        URL.revokeObjectURL(audioSrc);
+      }
+
+      const blobUrl = URL.createObjectURL(blob);
+      setAudioSrc(blobUrl);
     } catch (err: any) {
-      console.error("Error converting file source:", err);
-      setStatus(`読み込み失敗: ${err.message || err}`);
+      console.error("Error loading file via Rust backend:", err);
+      setStatus(`読み込み失敗: ${err}`);
     }
   };
 

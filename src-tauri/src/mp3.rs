@@ -179,6 +179,11 @@ pub fn organize_mp3(path: String, rule: String) -> Result<String, String> {
     Ok(new_path.to_string_lossy().to_string())
 }
 
+#[tauri::command]
+pub fn read_audio_file(path: String) -> Result<Vec<u8>, String> {
+    fs::read(path).map_err(|e| format!("ファイル読み込み失敗: {}", e))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
