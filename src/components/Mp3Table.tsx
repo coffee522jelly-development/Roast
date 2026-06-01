@@ -176,6 +176,9 @@ export function Mp3Table({
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onOrganize(file.path, "song_space_artist"); }}>
                           Song Artist.mp3
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onOrganize(file.path, "song_pipe_artist"); }}>
+                          Song | Artist.mp3
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>

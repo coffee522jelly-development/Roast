@@ -152,6 +152,14 @@ pub fn organize_mp3(path: String, rule: String) -> Result<String, String> {
             // rsplitn returns [artist, song]
             (parts[0].trim().to_string(), parts[1].trim().to_string())
         }
+        "song_pipe_artist" => {
+            let parts: Vec<&str> = stem.splitn(2, " | ").collect();
+            if parts.len() < 2 {
+                return Err("ファイル名に ' | ' が含まれていません".to_string());
+            }
+            // title | artist
+            (parts[1].trim().to_string(), parts[0].trim().to_string())
+        }
         _ => return Err("不明な整理ルールです".to_string()),
     };
 
