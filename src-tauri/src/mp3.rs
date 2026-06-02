@@ -85,7 +85,13 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
         .unwrap_or(0);
 
     let (bitrate, sample_rate) = match mp3_metadata::read_from_file(&abs_path) {
-        Ok(meta) => (Some(meta.bitrate), Some(meta.sampling_freq)),
+        Ok(meta) => {
+            let first_frame = meta.frames.first();
+            (
+                first_frame.map(|f| f.bitrate as u32),
+                first_frame.map(|f| f.sampling_freq as u32)
+            )
+        },
         Err(_) => (None, None),
     };
 
