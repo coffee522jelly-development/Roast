@@ -35,12 +35,13 @@ export interface Mp3Metadata {
 
 interface Settings {
   defaultFolder: string | null;
+  theme: string;
 }
 
 function App() {
   const [settings, setSettings] = useState<Settings>(() => {
     const saved = localStorage.getItem("roast-settings");
-    return saved ? JSON.parse(saved) : { defaultFolder: null };
+    return saved ? JSON.parse(saved) : { defaultFolder: null, theme: "zinc" };
   });
   const [showSettings, setShowSettings] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -63,6 +64,11 @@ function App() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
+
+  // Apply theme
+  useEffect(() => {
+    document.body.setAttribute("data-theme", settings.theme);
+  }, [settings.theme]);
 
   // Disable right-click globally
   useEffect(() => {
