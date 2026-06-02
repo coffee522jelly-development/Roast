@@ -15,7 +15,7 @@ import {
   Pause,
   Repeat,
   Volume2,
-  Music4
+  Flame
 } from "lucide-react";
 import "./App.css";
 
@@ -362,7 +362,7 @@ function App() {
       <header className="h-14 border-b flex items-center justify-between px-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-             <Music4 className="h-5 w-5 text-primary" />
+             <Flame className="h-5 w-5 text-primary fill-primary/10" />
              <h1 className="text-sm font-bold tracking-[0.2em] uppercase">Roast</h1>
           </div>
           <Button variant="ghost" size="xs" className="h-7 border bg-muted/30" onClick={() => setShowSettings(true)}>
