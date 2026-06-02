@@ -9,6 +9,7 @@ import { cn } from "../lib/utils";
 interface Settings {
   defaultFolder: string | null;
   theme: string;
+  bgMode: string;
 }
 
 interface SettingsModalProps {
@@ -38,6 +39,13 @@ export function SettingsModal({ settings, onSave, onClose }: SettingsModalProps)
     { id: "violet", color: "bg-[#7c3aed]", name: "Violet" },
   ];
 
+  const bgModes = [
+    { id: "light", name: "ライト", color: "bg-white border-slate-200" },
+    { id: "dark", name: "ダーク", color: "bg-slate-900 border-slate-800" },
+    { id: "espresso", name: "エスプレッソ", color: "bg-[#1a1412] border-[#2a1d1a]" },
+    { id: "sepia", name: "セピア", color: "bg-[#f4ecd8] border-[#e4dcc8]" },
+  ];
+
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px]">
@@ -63,7 +71,28 @@ export function SettingsModal({ settings, onSave, onClose }: SettingsModalProps)
           </div>
 
           <div className="space-y-3">
-            <Label className="text-xs uppercase tracking-widest opacity-70">テーマカラー</Label>
+            <Label className="text-xs uppercase tracking-widest opacity-70">背景色</Label>
+            <div className="grid grid-cols-4 gap-2">
+              {bgModes.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => onSave({ ...settings, bgMode: m.id })}
+                  className={cn(
+                    "flex flex-col items-center gap-1.5 p-2 rounded-md border-2 transition-all group",
+                    m.color,
+                    settings.bgMode === m.id ? "border-primary ring-2 ring-primary/20" : "border-transparent opacity-70 hover:opacity-100"
+                  )}
+                >
+                  <div className="text-[10px] font-medium leading-none" style={{ color: m.id === 'light' || m.id === 'sepia' ? '#000' : '#fff' }}>
+                    {m.name}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label className="text-xs uppercase tracking-widest opacity-70">アクセントカラー</Label>
             <div className="grid grid-cols-7 gap-2">
               {themes.map((t) => (
                 <button

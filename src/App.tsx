@@ -36,12 +36,13 @@ export interface Mp3Metadata {
 interface Settings {
   defaultFolder: string | null;
   theme: string;
+  bgMode: string;
 }
 
 function App() {
   const [settings, setSettings] = useState<Settings>(() => {
     const saved = localStorage.getItem("roast-settings");
-    return saved ? JSON.parse(saved) : { defaultFolder: null, theme: "zinc" };
+    return saved ? JSON.parse(saved) : { defaultFolder: null, theme: "zinc", bgMode: "light" };
   });
   const [showSettings, setShowSettings] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -65,10 +66,11 @@ function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
 
-  // Apply theme
+  // Apply theme and bg mode
   useEffect(() => {
     document.body.setAttribute("data-theme", settings.theme);
-  }, [settings.theme]);
+    document.body.setAttribute("data-bg-mode", settings.bgMode);
+  }, [settings.theme, settings.bgMode]);
 
   // Disable right-click globally
   useEffect(() => {
