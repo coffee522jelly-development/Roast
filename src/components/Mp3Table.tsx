@@ -20,8 +20,8 @@ interface Mp3TableProps {
   onSelect: (file: Mp3Metadata) => void;
   onDoubleClick: (file: Mp3Metadata) => void;
   selectedPath: string | null;
-  onSort: (field: "filename" | "artist") => void;
-  sortField: "filename" | "artist";
+  onSort: (field: "filename" | "artist" | "quality") => void;
+  sortField: "filename" | "artist" | "quality";
   sortOrder: "asc" | "desc";
 }
 
@@ -55,7 +55,7 @@ export function Mp3Table({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const renderSortIcon = (field: "filename" | "artist") => {
+  const renderSortIcon = (field: "filename" | "artist" | "quality") => {
     if (sortField !== field) return null;
     return sortOrder === "asc" ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />;
   };
@@ -83,6 +83,15 @@ export function Mp3Table({
                 <div className="flex items-center">
                   アーティスト
                   {renderSortIcon("artist")}
+                </div>
+              </th>
+              <th
+                className="h-10 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                onClick={() => onSort("quality")}
+              >
+                <div className="flex items-center">
+                  品質
+                  {renderSortIcon("quality")}
                 </div>
               </th>
               <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">
@@ -127,6 +136,9 @@ export function Mp3Table({
                 <td className="p-4 align-middle truncate max-w-[150px] text-xs">{file.title || "-"}</td>
                 <td className="p-4 align-middle truncate max-w-[150px] text-[10px] uppercase tracking-wider text-muted-foreground">
                   {file.artist || "-"}
+                </td>
+                <td className="p-4 align-middle font-mono text-[10px] text-muted-foreground">
+                  {file.bitrate ? `${file.bitrate}kbps` : "-"}
                 </td>
                 <td className="p-4 align-middle font-mono text-[10px] text-muted-foreground">
                   {formatDuration(file.duration)}

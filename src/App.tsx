@@ -29,6 +29,8 @@ export interface Mp3Metadata {
   duration: number | null;
   size: number;
   is_locked: boolean;
+  bitrate: number | null;
+  sample_rate: number | null;
 }
 
 interface Settings {
@@ -42,7 +44,7 @@ function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [sortField, setSortField] = useState<"filename" | "artist">("filename");
+  const [sortField, setSortField] = useState<"filename" | "artist" | "quality">("filename");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const [mp3Files, setMp3Files] = useState<Mp3Metadata[]>([]);
@@ -289,6 +291,16 @@ function App() {
     }
 
     result.sort((a, b) => {
+      if (sortField === "quality") {
+        let valA = a.bitrate || 0;
+        let valB = b.bitrate || 0;
+        if (valA === valB) {
+          valA = a.sample_rate || 0;
+          valB = b.sample_rate || 0;
+        }
+        return sortOrder === "asc" ? valA - valB : valB - valA;
+      }
+
       let valA = (sortField === "filename" ? a.filename : (a.artist || "")).toLowerCase();
       let valB = (sortField === "filename" ? b.filename : (b.artist || "")).toLowerCase();
 
@@ -300,7 +312,7 @@ function App() {
     return result;
   }, [mp3Files, searchQuery, sortField, sortOrder]);
 
-  const toggleSort = (field: "filename" | "artist") => {
+  const toggleSort = (field: "filename" | "artist" | "quality") => {
     if (sortField === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {

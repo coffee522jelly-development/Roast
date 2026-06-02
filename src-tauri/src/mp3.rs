@@ -17,6 +17,8 @@ pub struct Mp3Metadata {
     pub duration: Option<u64>,     // In seconds
     pub size: u64,               // In bytes
     pub is_locked: bool,
+    pub bitrate: Option<u32>,      // In kbps
+    pub sample_rate: Option<u32>,  // In Hz
 }
 
 #[tauri::command]
@@ -82,6 +84,11 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
         .map(|m| m.len())
         .unwrap_or(0);
 
+    let (bitrate, sample_rate) = match mp3_metadata::read_from_file(&abs_path) {
+        Ok(meta) => (Some(meta.bitrate), Some(meta.sampling_freq)),
+        Err(_) => (None, None),
+    };
+
     Ok(Mp3Metadata {
         path: path_str,
         filename,
@@ -92,6 +99,8 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
         duration,
         size,
         is_locked,
+        bitrate,
+        sample_rate,
     })
 }
 

@@ -91,6 +91,12 @@ export function DetailView({ file, artwork }: DetailViewProps) {
             <dt className="text-muted-foreground font-medium">Size</dt>
             <dd className="col-span-2">{formatSize(file.size)}</dd>
 
+            <dt className="text-muted-foreground font-medium">Quality</dt>
+            <dd className="col-span-2">
+              <span className="font-semibold">{file.bitrate || "-"} kbps</span>
+              <span className="text-muted-foreground ml-2">({(file.sample_rate || 0) / 1000} kHz)</span>
+            </dd>
+
             <dt className="text-muted-foreground font-medium">Filename</dt>
             <dd className="col-span-2 flex items-start gap-2 group/copy">
               <span className="break-all text-[10px] leading-tight text-muted-foreground flex-1">
