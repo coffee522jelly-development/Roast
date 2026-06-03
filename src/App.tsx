@@ -212,6 +212,7 @@ function App() {
   };
 
   const togglePlay = async () => {
+    if (!audioSrc) return;
     if (audioRef.current) {
       const audio = audioRef.current;
       if (isPlaying) {

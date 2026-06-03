@@ -1,9 +1,9 @@
 import { Mp3Metadata } from "../App";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { Edit2, FolderTree, Clock, Copy, Check, ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
+import { Edit2, FolderTree, Clock, Copy, Check, ExternalLink, ChevronUp, ChevronDown, PlayCircle } from "lucide-react";
 import { useState } from "react";
-import { revealItemInDir } from "@tauri-apps/plugin-opener";
+import { revealItemInDir, openPath } from "@tauri-apps/plugin-opener";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -145,6 +145,15 @@ export function Mp3Table({
                 </td>
                 <td className="p-4 align-middle text-right">
                   <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-6 w-6 p-0"
+                      onClick={(e) => { e.stopPropagation(); openPath(file.path); }}
+                      title="外部プレイヤーで開く"
+                    >
+                      <PlayCircle className="h-3 w-3" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="xs"
