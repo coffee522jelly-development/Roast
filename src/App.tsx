@@ -194,16 +194,18 @@ function App() {
 
     try {
       setStatus("読み込み中...");
-      // Re-implementing Blob playback but via a dedicated Rust command
-      // to ensure we bypass any potential tauri-plugin-fs or protocol restrictions.
       const bytes: number[] = await invoke("read_audio_file", { path: file.path });
-      const blob = new Blob([new Uint8Array(bytes)], { type: "audio/mpeg" });
+
+      // MIMEタイプをあえて指定しない、またはより汎用的な指定を試みる
+      // 一部の環境では audio/mpeg よりも audio/mp3 や指定なしの方が通る場合があります
+      const blob = new Blob([new Uint8Array(bytes)]);
 
       if (audioSrc && audioSrc.startsWith("blob:")) {
         URL.revokeObjectURL(audioSrc);
       }
 
       const blobUrl = URL.createObjectURL(blob);
+      console.log("Blob URL created:", blobUrl);
       setAudioSrc(blobUrl);
     } catch (err: any) {
       console.error("Error loading file via Rust backend:", err);
