@@ -1,7 +1,18 @@
 import { Mp3Metadata } from "../App";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { Edit2, FolderTree, Clock, Copy, Check, ExternalLink, ChevronUp, ChevronDown, PlayCircle } from "lucide-react";
+import {
+  Edit2,
+  FolderTree,
+  Clock,
+  Copy,
+  Check,
+  ExternalLink,
+  ChevronUp,
+  ChevronDown,
+  PlayCircle,
+  Trash2
+} from "lucide-react";
 import { useState } from "react";
 import { revealItemInDir, openPath } from "@tauri-apps/plugin-opener";
 import {
@@ -17,6 +28,7 @@ interface Mp3TableProps {
   files: Mp3Metadata[];
   onEdit: (file: Mp3Metadata) => void;
   onOrganize: (path: string, rule: string) => void;
+  onDelete: (path: string) => void;
   onSelect: (file: Mp3Metadata) => void;
   onDoubleClick: (file: Mp3Metadata) => void;
   selectedPath: string | null;
@@ -29,6 +41,7 @@ export function Mp3Table({
   files,
   onEdit,
   onOrganize,
+  onDelete,
   onSelect,
   onDoubleClick,
   selectedPath,
@@ -171,6 +184,21 @@ export function Mp3Table({
                       title="タグを編集"
                     >
                       <Edit2 className="h-3 w-3" />
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-6 w-6 p-0 hover:text-destructive transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`「${file.filename}」を削除してもよろしいですか？`)) {
+                          onDelete(file.path);
+                        }
+                      }}
+                      title="ファイルを削除"
+                    >
+                      <Trash2 className="h-3 w-3" />
                     </Button>
 
                     <DropdownMenu>

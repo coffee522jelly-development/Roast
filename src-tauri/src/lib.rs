@@ -11,7 +11,8 @@ pub fn run() {
             mp3::get_mp3_artwork,
             mp3::update_mp3_metadata,
             mp3::organize_mp3,
-            mp3::read_audio_file
+            mp3::read_audio_file,
+            mp3::delete_mp3
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

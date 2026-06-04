@@ -207,6 +207,11 @@ pub fn read_audio_file(path: String) -> Result<Vec<u8>, String> {
     fs::read(path).map_err(|e| format!("ファイル読み込み失敗: {}", e))
 }
 
+#[tauri::command]
+pub fn delete_mp3(path: String) -> Result<(), String> {
+    fs::remove_file(path).map_err(|e| format!("ファイル削除失敗: {}", e))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

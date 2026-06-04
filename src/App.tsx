@@ -159,6 +159,24 @@ function App() {
     }
   }
 
+  async function deleteFile(path: string) {
+    try {
+      await invoke("delete_mp3", { path });
+      setStatus("ファイルを削除しました");
+
+      // Clear current audio source if deleted file was playing
+      if (selectedFile?.path === path) {
+        setAudioSrc(null);
+        setSelectedFile(null);
+      }
+
+      if (settings.defaultFolder) loadMp3Files(settings.defaultFolder);
+    } catch (err: any) {
+      console.error(err);
+      setStatus(`削除失敗: ${err.message || err}`);
+    }
+  }
+
   async function updateMetadata(file: Mp3Metadata) {
     try {
       await invoke("update_mp3_metadata", { path: file.path, metadata: file });
@@ -416,6 +434,7 @@ function App() {
             files={filteredFiles}
             onEdit={(file) => setEditingFile(file)}
             onOrganize={organizeFile}
+            onDelete={deleteFile}
             onSelect={selectFile}
             onDoubleClick={playFile}
             selectedPath={selectedFile?.path || null}
