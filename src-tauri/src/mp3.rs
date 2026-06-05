@@ -203,8 +203,9 @@ pub fn organize_mp3(path: String, rule: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn read_audio_file(path: String) -> Result<Vec<u8>, String> {
-    fs::read(path).map_err(|e| format!("ファイル読み込み失敗: {}", e))
+pub fn read_audio_file(path: String) -> Result<String, String> {
+    let bytes = fs::read(path).map_err(|e| format!("ファイル読み込み失敗: {}", e))?;
+    Ok(general_purpose::STANDARD.encode(bytes))
 }
 
 #[tauri::command]

@@ -212,19 +212,14 @@ function App() {
 
     try {
       setStatus("読み込み中...");
-      const bytes: number[] = await invoke("read_audio_file", { path: file.path });
+      const b64: string = await invoke("read_audio_file", { path: file.path });
 
-      // MIMEタイプをあえて指定しない、またはより汎用的な指定を試みる
-      // 一部の環境では audio/mpeg よりも audio/mp3 や指定なしの方が通る場合があります
-      const blob = new Blob([new Uint8Array(bytes)]);
+      // Using Data URL directly as a final fallback for problematic environments
+      const dataUrl = `data:audio/mpeg;base64,${b64}`;
 
-      if (audioSrc && audioSrc.startsWith("blob:")) {
-        URL.revokeObjectURL(audioSrc);
-      }
-
-      const blobUrl = URL.createObjectURL(blob);
-      console.log("Blob URL created:", blobUrl);
-      setAudioSrc(blobUrl);
+      // Also maintain Blob as an alternative if needed, but Data URL is more direct
+      // Here we prioritize Data URL for extreme compatibility
+      setAudioSrc(dataUrl);
     } catch (err: any) {
       console.error("Error loading file via Rust backend:", err);
       setStatus(`読み込み失敗: ${err}`);
@@ -293,7 +288,10 @@ function App() {
         case 1: message = "再生が中断されました"; break;
         case 2: message = "ネットワークエラー"; break;
         case 3: message = "オーディオのデコードに失敗しました"; break;
-        case 4: message = "サポートされていない形式か、権限がありません"; break;
+        case 4:
+          message = "非対応形式、またはコーデック不足です。Windows Media Feature Packがインストールされているか確認してください。";
+          alert("再生エラー: ブラウザエンジン(WebView2)で再生できません。Windows N版などをお使いの場合は Media Feature Pack のインストールが必要な場合があります。外部プレイヤーでの再生もご検討ください。");
+          break;
       }
     }
     setStatus(`エラー: ${message}`);
