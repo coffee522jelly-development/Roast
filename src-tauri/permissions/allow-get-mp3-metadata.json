@@ -1,5 +1,0 @@
-{
-  "identifier": "allow-get-mp3-metadata",
-  "description": "Allows calling the get_mp3_metadata command",
-  "commands": ["get_mp3_metadata"]
-}

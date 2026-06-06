@@ -1,5 +1,0 @@
-{
-  "identifier": "allow-update-mp3-metadata",
-  "description": "Allows calling the update_mp3_metadata command",
-  "commands": ["update_mp3_metadata"]
-}

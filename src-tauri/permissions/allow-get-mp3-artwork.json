@@ -1,5 +1,0 @@
-{
-  "identifier": "allow-get-mp3-artwork",
-  "description": "Allows calling the get_mp3_artwork command",
-  "commands": ["get_mp3_artwork"]
-}

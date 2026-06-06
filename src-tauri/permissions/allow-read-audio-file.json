@@ -1,5 +1,0 @@
-{
-  "identifier": "allow-read-audio-file",
-  "description": "Allows calling the read_audio_file command",
-  "commands": ["read_audio_file"]
-}
