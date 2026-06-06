@@ -6,23 +6,8 @@
   "permissions": [
     "core:default",
     "opener:default",
-    {
-      "identifier": "opener:allow-reveal-item-in-dir",
-      "allow": [{ "path": "**" }]
-    },
-    {
-      "identifier": "opener:allow-open-path",
-      "allow": [{ "path": "**" }]
-    },
     "dialog:default",
-    {
-      "identifier": "fs:allow-exists",
-      "allow": [{ "path": "**" }]
-    },
-    {
-      "identifier": "fs:allow-read",
-      "allow": [{ "path": "**" }]
-    },
+    "roast:allow-main-commands",
     {
       "identifier": "fs:allow-read-file",
       "allow": [{ "path": "**" }]
@@ -32,17 +17,16 @@
       "allow": [{ "path": "**" }]
     },
     {
-      "identifier": "fs:allow-rename",
-      "allow": [{ "path": "**" }]
-    },
-    {
-      "identifier": "fs:allow-mkdir",
-      "allow": [{ "path": "**" }]
-    },
-    {
       "identifier": "fs:allow-remove",
       "allow": [{ "path": "**" }]
     },
-    "roast:allow-all-commands"
+    {
+      "identifier": "opener:allow-reveal-item-in-dir",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [{ "path": "**" }]
+    }
   ]
 }

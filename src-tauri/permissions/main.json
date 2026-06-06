@@ -1,0 +1,14 @@
+{
+  "identifier": "allow-main-commands",
+  "description": "Allows all custom music management commands",
+  "commands": {
+    "allow": [
+      "get_mp3_metadata",
+      "get_mp3_artwork",
+      "update_mp3_metadata",
+      "organize_mp3",
+      "read_audio_file",
+      "delete_mp3"
+    ]
+  }
+}
