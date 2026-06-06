@@ -1,0 +1,5 @@
+{
+  "identifier": "allow-organize-mp3",
+  "description": "Allows calling the organize_mp3 command",
+  "commands": ["organize_mp3"]
+}

@@ -26,7 +26,7 @@ export function DetailView({ file, artwork }: DetailViewProps) {
   if (!file) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground italic text-sm">
-        Select a file to see details
+        ファイルを選択すると詳細が表示されます
       </div>
     );
   }
@@ -63,41 +63,41 @@ export function DetailView({ file, artwork }: DetailViewProps) {
       <div className="space-y-4">
         <section>
           <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 border-b pb-1">
-            Metadata
+            メタデータ
           </h4>
           <dl className="grid grid-cols-3 gap-y-3 text-xs">
-            <dt className="text-muted-foreground font-medium">Title</dt>
+            <dt className="text-muted-foreground font-medium">タイトル</dt>
             <dd className="col-span-2 truncate font-semibold">{file.title || "-"}</dd>
 
-            <dt className="text-muted-foreground font-medium">Artist</dt>
+            <dt className="text-muted-foreground font-medium">アーティスト</dt>
             <dd className="col-span-2 truncate font-semibold">{file.artist || "-"}</dd>
 
-            <dt className="text-muted-foreground font-medium">Album</dt>
+            <dt className="text-muted-foreground font-medium">アルバム</dt>
             <dd className="col-span-2 truncate">{file.album || "-"}</dd>
 
-            <dt className="text-muted-foreground font-medium">Year</dt>
+            <dt className="text-muted-foreground font-medium">リリース年</dt>
             <dd className="col-span-2">{file.year || "-"}</dd>
           </dl>
         </section>
 
         <section>
           <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 border-b pb-1">
-            Properties
+            プロパティ
           </h4>
           <dl className="grid grid-cols-3 gap-y-3 text-xs">
-            <dt className="text-muted-foreground font-medium">Length</dt>
+            <dt className="text-muted-foreground font-medium">長さ</dt>
             <dd className="col-span-2 font-mono text-[11px]">{formatDuration(file.duration)}</dd>
 
-            <dt className="text-muted-foreground font-medium">Size</dt>
+            <dt className="text-muted-foreground font-medium">サイズ</dt>
             <dd className="col-span-2">{formatSize(file.size)}</dd>
 
-            <dt className="text-muted-foreground font-medium">Quality</dt>
+            <dt className="text-muted-foreground font-medium">品質</dt>
             <dd className="col-span-2">
               <span className="font-semibold">{file.bitrate || "-"} kbps</span>
               <span className="text-muted-foreground ml-2">({(file.sample_rate || 0) / 1000} kHz)</span>
             </dd>
 
-            <dt className="text-muted-foreground font-medium">Filename</dt>
+            <dt className="text-muted-foreground font-medium">ファイル名</dt>
             <dd className="col-span-2 flex items-start gap-2 group/copy">
               <span className="break-all text-[10px] leading-tight text-muted-foreground flex-1">
                 {file.filename}
@@ -107,7 +107,7 @@ export function DetailView({ file, artwork }: DetailViewProps) {
                 size="xs"
                 className="h-5 w-5 p-0 opacity-0 group-hover/copy:opacity-100 transition-opacity"
                 onClick={copyFilename}
-                title="Copy Filename"
+                title="ファイル名をコピー"
               >
                 {copied ? (
                   <Check className="h-3 w-3 text-green-500" />
@@ -121,7 +121,7 @@ export function DetailView({ file, artwork }: DetailViewProps) {
       </div>
 
       <div className="mt-auto pt-6 border-t">
-        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">Location</span>
+        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">場所</span>
         <p className="text-[9px] break-all text-muted-foreground/60 leading-relaxed font-mono">
           {file.path}
         </p>

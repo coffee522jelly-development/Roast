@@ -89,12 +89,7 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
             let first_frame = meta.frames.first();
             (
                 first_frame.map(|f| f.bitrate as u32),
-                first_frame.map(|f| match f.sampling_freq {
-                    mp3_metadata::SamplingFreq::Hz44100 => 44100,
-                    mp3_metadata::SamplingFreq::Hz48000 => 48000,
-                    mp3_metadata::SamplingFreq::Hz32000 => 32000,
-                    _ => 0,
-                })
+                first_frame.map(|f| f.sampling_freq as u32)
             )
         },
         Err(_) => (None, None),

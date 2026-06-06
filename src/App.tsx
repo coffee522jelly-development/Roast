@@ -483,7 +483,7 @@ function App() {
                 size="icon"
                 className={isLoop ? "text-primary bg-primary/10 border-primary/20" : "text-muted-foreground"}
                 onClick={() => setIsLoop(!isLoop)}
-                title="Loop Track"
+                title="ループ再生"
               >
                 <Repeat className="h-4 w-4" />
              </Button>

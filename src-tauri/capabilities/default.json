@@ -42,6 +42,12 @@
     {
       "identifier": "fs:allow-remove",
       "allow": [{ "path": "**" }]
-    }
+    },
+    "allow-get-mp3-metadata",
+    "allow-get-mp3-artwork",
+    "allow-update-mp3-metadata",
+    "allow-organize-mp3",
+    "allow-read-audio-file",
+    "allow-delete-mp3"
   ]
 }
