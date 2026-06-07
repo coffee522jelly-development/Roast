@@ -12,9 +12,10 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "roast",
-        "width": 1280,
-        "height": 800
+        "width": 1920,
+        "height": 1080
       }
     ],
     "security": {

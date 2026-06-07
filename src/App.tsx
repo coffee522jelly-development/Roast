@@ -41,8 +41,13 @@ interface Settings {
 
 function App() {
   const [settings, setSettings] = useState<Settings>(() => {
-    const saved = localStorage.getItem("roast-settings");
-    return saved ? JSON.parse(saved) : { defaultFolder: null, theme: "zinc", bgMode: "light" };
+    try {
+      const saved = localStorage.getItem("roast-settings");
+      return saved ? JSON.parse(saved) : { defaultFolder: null, theme: "zinc", bgMode: "light" };
+    } catch (e) {
+      console.error("Failed to parse settings:", e);
+      return { defaultFolder: null, theme: "zinc", bgMode: "light" };
+    }
   });
   const [showSettings, setShowSettings] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

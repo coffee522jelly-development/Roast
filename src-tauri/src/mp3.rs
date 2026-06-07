@@ -95,6 +95,7 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
         Err(_) => (None, None),
     };
 
+
     Ok(Mp3Metadata {
         path: path_str,
         filename,
@@ -153,6 +154,7 @@ pub fn organize_mp3(path: String, rule: String) -> Result<String, String> {
             (parts[0].trim().to_string(), parts[1].trim().to_string())
         }
         "artist_space_song" => {
+            // First space is usually the artist/title separator in this rule
             let parts: Vec<&str> = stem.splitn(2, ' ').collect();
             if parts.len() < 2 {
                 return Err("ファイル名にスペースが含まれていません".to_string());
@@ -174,6 +176,14 @@ pub fn organize_mp3(path: String, rule: String) -> Result<String, String> {
             }
             // title | artist
             (parts[1].trim().to_string(), parts[0].trim().to_string())
+        }
+        "song_dash_artist" => {
+            let parts: Vec<&str> = stem.rsplitn(2, " - ").collect();
+            if parts.len() < 2 {
+                return Err("ファイル名に ' - ' が含まれていません".to_string());
+            }
+            // [artist, song]
+            (parts[0].trim().to_string(), parts[1].trim().to_string())
         }
         _ => return Err("不明な整理ルールです".to_string()),
     };

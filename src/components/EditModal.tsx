@@ -16,50 +16,50 @@ export function EditModal({ file, onSave, onCancel, onChange }: EditModalProps) 
     <Dialog open={true} onOpenChange={(open) => !open && onCancel()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Metadata</DialogTitle>
+          <DialogTitle>メタデータの編集</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">Title</Label>
+            <Label htmlFor="title" className="text-right">タイトル</Label>
             <Input
               id="title"
               value={file.title || ""}
               onChange={(e) => onChange({ ...file, title: e.target.value })}
-              className="col-span-3"
+              className="col-span-3 text-xs"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="artist" className="text-right">Artist</Label>
+            <Label htmlFor="artist" className="text-right">アーティスト</Label>
             <Input
               id="artist"
               value={file.artist || ""}
               onChange={(e) => onChange({ ...file, artist: e.target.value })}
-              className="col-span-3"
+              className="col-span-3 text-xs"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="album" className="text-right">Album</Label>
+            <Label htmlFor="album" className="text-right">アルバム</Label>
             <Input
               id="album"
               value={file.album || ""}
               onChange={(e) => onChange({ ...file, album: e.target.value })}
-              className="col-span-3"
+              className="col-span-3 text-xs"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="year" className="text-right">Year</Label>
+            <Label htmlFor="year" className="text-right">リリース年</Label>
             <Input
               id="year"
               type="number"
               value={file.year || ""}
               onChange={(e) => onChange({ ...file, year: e.target.value ? parseInt(e.target.value) : null })}
-              className="col-span-3"
+              className="col-span-3 text-xs"
             />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>Cancel</Button>
-          <Button onClick={() => onSave(file)}>Save Changes</Button>
+          <Button variant="outline" onClick={onCancel}>キャンセル</Button>
+          <Button onClick={() => onSave(file)}>保存する</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
