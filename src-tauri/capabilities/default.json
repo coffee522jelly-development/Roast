@@ -5,7 +5,7 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "roast:allow-main-commands",
+    "allow-main-commands",
     "opener:allow-reveal-item-in-dir",
     "opener:allow-open-path",
     "fs:allow-read-file",
