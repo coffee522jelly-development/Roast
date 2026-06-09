@@ -23,6 +23,7 @@ pub struct Mp3Metadata {
 
 #[tauri::command]
 pub fn get_mp3_metadata(dir_path: String) -> Result<Vec<Mp3Metadata>, String> {
+    println!("DEBUG: Command get_mp3_metadata called with path: {}", dir_path);
     let mut results = Vec::new();
     let root_path = Path::new(&dir_path);
 
@@ -44,6 +45,7 @@ pub fn get_mp3_metadata(dir_path: String) -> Result<Vec<Mp3Metadata>, String> {
 
 #[tauri::command]
 pub fn get_mp3_artwork(path: String) -> Result<Option<String>, String> {
+    println!("DEBUG: Command get_mp3_artwork called for: {}", path);
     let tag = Tag::read_from_path(&path).ok();
     let artwork = tag.as_ref().and_then(|t| {
         t.pictures().next().map(|p| {
@@ -214,6 +216,7 @@ pub fn organize_mp3(path: String, rule: String) -> Result<String, String> {
 
 #[tauri::command]
 pub fn read_audio_file(path: String) -> Result<String, String> {
+    println!("DEBUG: Command read_audio_file called for: {}", path);
     let bytes = fs::read(path).map_err(|e| format!("ファイル読み込み失敗: {}", e))?;
     Ok(general_purpose::STANDARD.encode(bytes))
 }
