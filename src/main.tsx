@@ -5,6 +5,19 @@ import "./App.css";
 
 console.log("Roast: Application starting...");
 
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+  const errStr = `JS Error: ${msg} at ${lineNo}:${columnNo}\n${error?.stack || ""}`;
+  console.error(errStr);
+  alert(errStr); // Immediate visible alert for early crashes
+  return false;
+};
+
+window.onunhandledrejection = function(event) {
+  const errStr = `Unhandled Promise: ${event.reason}`;
+  console.error(errStr);
+  alert(errStr);
+};
+
 try {
   const rootElement = document.getElementById("root");
   if (!rootElement) {

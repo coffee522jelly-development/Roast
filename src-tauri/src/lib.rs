@@ -2,6 +2,11 @@ mod mp3;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    println!("ROAST_DEBUG: Rust run() started");
+
+    let context = tauri::generate_context!();
+    println!("ROAST_DEBUG: Context generated");
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
@@ -14,6 +19,10 @@ pub fn run() {
             mp3::read_audio_file,
             mp3::delete_mp3
         ])
-        .run(tauri::generate_context!())
+        .setup(|_app| {
+            println!("ROAST_DEBUG: App setup complete");
+            Ok(())
+        })
+        .run(context)
         .expect("error while running tauri application");
 }

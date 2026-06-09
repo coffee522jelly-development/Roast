@@ -86,8 +86,8 @@ pub fn read_metadata(path: &Path) -> Result<Mp3Metadata, String> {
         .map(|m| m.len())
         .unwrap_or(0);
 
-    let (bitrate, sample_rate) = match std::panic::catch_unwind(|| mp3_metadata::read_from_file(&abs_path)) {
-        Ok(Ok(meta)) => {
+    let (bitrate, sample_rate) = match mp3_metadata::read_from_file(&abs_path) {
+        Ok(meta) => {
             let first_frame = meta.frames.first();
             (
                 first_frame.map(|f| f.bitrate as u32),
