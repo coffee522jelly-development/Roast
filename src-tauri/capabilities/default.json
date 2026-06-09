@@ -5,15 +5,10 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "allow-main-commands",
-    {
-      "identifier": "opener:allow-reveal-item-in-dir",
-      "allow": [{ "path": "**" }]
-    },
-    {
-      "identifier": "opener:allow-open-path",
-      "allow": [{ "path": "**" }]
-    },
+    "roast:default",
+    "opener:default",
+    "dialog:default",
+    "fs:default",
     {
       "identifier": "fs:allow-read-file",
       "allow": [{ "path": "**" }]
@@ -26,6 +21,13 @@
       "identifier": "fs:allow-remove",
       "allow": [{ "path": "**" }]
     },
-    "dialog:default"
+    {
+      "identifier": "opener:allow-reveal-item-in-dir",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [{ "path": "**" }]
+    }
   ]
 }
