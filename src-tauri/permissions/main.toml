@@ -1,6 +1,6 @@
 [[permission]]
-identifier = "default"
-description = "Default permissions for Roast MP3 Manager"
+identifier = "allow-main-commands"
+description = "Permissions for Roast custom commands"
 commands.allow = [
     "get_mp3_metadata",
     "get_mp3_artwork",

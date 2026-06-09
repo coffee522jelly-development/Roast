@@ -5,7 +5,7 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "roast:default",
+    "allow-main-commands",
     "opener:default",
     "dialog:default",
     "fs:default",
