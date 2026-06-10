@@ -29,6 +29,7 @@ tauri-plugin-fs = "2.5.1"
 base64 = "0.22.1"
 mp3-duration = "0.1.10"
 mp3-metadata = "0.3.4"
+chrono = "0.4"
 
 [dev-dependencies]
 tempfile = "3.27.0"

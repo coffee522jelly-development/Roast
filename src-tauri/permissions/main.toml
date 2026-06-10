@@ -7,5 +7,6 @@ commands.allow = [
     "update_mp3_metadata",
     "organize_mp3",
     "read_audio_file",
-    "delete_mp3"
+    "delete_mp3",
+    "log_to_file"
 ]
