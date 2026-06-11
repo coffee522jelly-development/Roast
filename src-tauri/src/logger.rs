@@ -1,6 +1,5 @@
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::path::PathBuf;
 use std::env;
 
 pub fn log(msg: &str) {

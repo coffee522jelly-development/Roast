@@ -6,7 +6,7 @@ import "./App.css";
 
 console.log("Roast: Application starting...");
 
-window.onerror = function(msg, url, lineNo, columnNo, error) {
+window.onerror = function(msg, _url, lineNo, columnNo, error) {
   const errStr = `JS Error: ${msg} at ${lineNo}:${columnNo}\n${error?.stack || ""}`;
   console.error(errStr);
   invoke("log_to_file", { msg: errStr }).catch(() => {});
