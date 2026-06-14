@@ -23,9 +23,6 @@
     }
   },
   "plugins": {
-    "opener": {},
-    "dialog": {},
-    "fs": {}
   },
   "bundle": {
     "active": true,
