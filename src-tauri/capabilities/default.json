@@ -9,10 +9,25 @@
     "opener:default",
     "dialog:default",
     "fs:default",
-    "opener:allow-reveal-item-in-dir",
-    "opener:allow-open-path",
-    "fs:allow-read-file",
-    "fs:allow-write-file",
-    "fs:allow-remove"
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "opener:allow-reveal-item-in-dir",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [{ "path": "**" }]
+    }
   ]
 }
