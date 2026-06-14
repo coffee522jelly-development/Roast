@@ -24,6 +24,7 @@ pub fn run() {
         ])
         .setup(|_app| {
             logger::log("ROAST_DEBUG: App setup complete");
+            println!("ROAST: SETUP COMPLETE");
             Ok(())
         })
         .run(context)

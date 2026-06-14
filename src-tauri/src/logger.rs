@@ -3,16 +3,14 @@ use std::io::Write;
 use std::env;
 
 pub fn log(msg: &str) {
-    if let Ok(exe_path) = env::current_exe() {
-        if let Some(dir) = exe_path.parent() {
-            let log_path = dir.join("roast_crash_log.txt");
-            if let Ok(mut file) = OpenOptions::new()
-                .create(true)
-                .append(true)
-                .open(log_path) {
-                let _ = writeln!(file, "{}", msg);
-            }
-        }
+    let mut log_path = env::temp_dir();
+    log_path.push("roast_crash_log.txt");
+
+    if let Ok(mut file) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_path) {
+        let _ = writeln!(file, "{}", msg);
     }
 }
 
