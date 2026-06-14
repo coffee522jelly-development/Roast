@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Mp3Table } from "./components/Mp3Table";
+import { Mp3GridView } from "./components/Mp3GridView";
 import { EditModal } from "./components/EditModal";
 import { DetailView } from "./components/DetailView";
 import { SettingsModal } from "./components/SettingsModal";
@@ -15,7 +16,9 @@ import {
   Pause,
   Repeat,
   Volume2,
-  Flame
+  Flame,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import "./App.css";
 
@@ -50,6 +53,7 @@ function App() {
     }
   });
   const [showSettings, setShowSettings] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [sortField, setSortField] = useState<"filename" | "artist" | "quality">("filename");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -422,6 +426,27 @@ function App() {
                <span className="text-[9px] font-bold uppercase tracking-tighter text-primary">{status}</span>
             </div>
           )}
+          <div className="flex items-center gap-1 border rounded-md p-1 bg-muted/20">
+            <Button
+              variant={viewMode === "table" ? "secondary" : "ghost"}
+              size="xs"
+              className="h-7 w-7 p-0"
+              onClick={() => setViewMode("table")}
+              title="リスト表示"
+            >
+              <List className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="xs"
+              className="h-7 w-7 p-0"
+              onClick={() => setViewMode("grid")}
+              title="アルバムアート表示"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
           <Button
             variant={isSidebarOpen ? "secondary" : "ghost"}
             size="xs"
@@ -436,18 +461,27 @@ function App() {
       <main className="flex flex-1 overflow-hidden">
         {/* Main Area */}
         <div className="flex-1 overflow-hidden p-4">
-          <Mp3Table
-            files={filteredFiles}
-            onEdit={(file) => setEditingFile(file)}
-            onOrganize={organizeFile}
-            onDelete={deleteFile}
-            onSelect={selectFile}
-            onDoubleClick={playFile}
-            selectedPath={selectedFile?.path || null}
-            onSort={toggleSort}
-            sortField={sortField}
-            sortOrder={sortOrder}
-          />
+          {viewMode === "table" ? (
+            <Mp3Table
+              files={filteredFiles}
+              onEdit={(file) => setEditingFile(file)}
+              onOrganize={organizeFile}
+              onDelete={deleteFile}
+              onSelect={selectFile}
+              onDoubleClick={playFile}
+              selectedPath={selectedFile?.path || null}
+              onSort={toggleSort}
+              sortField={sortField}
+              sortOrder={sortOrder}
+            />
+          ) : (
+            <Mp3GridView
+              files={filteredFiles}
+              onSelect={selectFile}
+              onDoubleClick={playFile}
+              selectedPath={selectedFile?.path || null}
+            />
+          )}
         </div>
 
         {/* Sidebar (Detail View) */}
