@@ -11,6 +11,7 @@ import {
   ChevronUp,
   ChevronDown,
   PlayCircle,
+  Play,
   Trash2
 } from "lucide-react";
 import { useState } from "react";
@@ -158,6 +159,15 @@ export function Mp3Table({
                 </td>
                 <td className="p-4 align-middle text-right">
                   <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-6 w-6 p-0 text-primary"
+                      onClick={(e) => { e.stopPropagation(); onDoubleClick(file); }}
+                      title="Roastで再生"
+                    >
+                      <Play className="h-3 w-3 fill-current" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="xs"

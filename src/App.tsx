@@ -206,6 +206,7 @@ function App() {
   };
 
   const playFile = async (file: Mp3Metadata) => {
+    console.log("ROAST: Starting playback for", file.filename);
     if (file.is_locked) {
       setStatus("ファイルがロックされています");
       alert("ファイルが他のプログラムによってロックされているため、再生できません。");
@@ -213,11 +214,13 @@ function App() {
     }
 
     selectFile(file);
-    setIsSidebarOpen(true);
+    setIsSidebarOpen(true); // Open sidebar when playing
 
     try {
       setStatus("読み込み中...");
+      console.log("ROAST_DEBUG: Invoking read_audio_file for", file.path);
       const b64: string = await invoke("read_audio_file", { path: file.path });
+      console.log("ROAST_DEBUG: Received b64 data, length:", b64.length);
 
       // Using Data URL directly as a final fallback for problematic environments
       const dataUrl = `data:audio/mpeg;base64,${b64}`;
