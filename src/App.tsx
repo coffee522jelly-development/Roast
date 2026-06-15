@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Mp3Table } from "./components/Mp3Table";
 import { Mp3GridView } from "./components/Mp3GridView";
+import { WaveformDisplay } from "./components/WaveformDisplay";
 import { EditModal } from "./components/EditModal";
 import { DetailView } from "./components/DetailView";
 import { SettingsModal } from "./components/SettingsModal";
@@ -71,6 +72,9 @@ function App() {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
+  const [rawB64, setRawB64] = useState<string | null>(null);
+  const [aPoint, setAPoint] = useState<number | null>(null);
+  const [bPoint, setBPoint] = useState<number | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
@@ -226,6 +230,10 @@ function App() {
       const b64: string = await invoke("read_audio_file", { path: file.path });
       console.log("ROAST_DEBUG: Received b64 data, length:", b64.length);
 
+      setRawB64(b64);
+      setAPoint(null);
+      setBPoint(null);
+
       // Using Data URL directly as a final fallback for problematic environments
       const dataUrl = `data:audio/mpeg;base64,${b64}`;
 
@@ -270,8 +278,16 @@ function App() {
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
+      const time = audioRef.current.currentTime;
+      setCurrentTime(time);
       setDuration(audioRef.current.duration);
+
+      // A-B Repeat logic
+      if (aPoint !== null && bPoint !== null) {
+        if (time >= bPoint) {
+          audioRef.current.currentTime = aPoint;
+        }
+      }
     }
   };
 
@@ -314,6 +330,27 @@ function App() {
     const mins = Math.floor(time / 60);
     const secs = Math.floor(time % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const setA = () => {
+    setAPoint(currentTime);
+    if (bPoint !== null && currentTime >= bPoint) setBPoint(null);
+    setStatus("点Aを設定しました");
+  };
+
+  const setB = () => {
+    if (aPoint !== null && currentTime <= aPoint) {
+      alert("点Bは点Aより後である必要があります");
+      return;
+    }
+    setBPoint(currentTime);
+    setStatus("点Bを設定しました");
+  };
+
+  const clearAB = () => {
+    setAPoint(null);
+    setBPoint(null);
+    setStatus("A-Bリピートを解除しました");
   };
 
   const filteredFiles = useMemo(() => {
@@ -493,19 +530,33 @@ function App() {
       </main>
 
       {/* Player Bar */}
-      <footer className="h-24 border-t bg-background/95 backdrop-blur px-8 flex flex-col justify-center gap-3">
-        {/* Seekbar */}
-        <div className="flex items-center gap-3 w-full">
-          <span className="text-[10px] font-mono text-muted-foreground w-10 text-right">{formatTime(currentTime)}</span>
-          <Slider
-            min={0}
-            max={duration || 0}
-            step={0.1}
-            value={[currentTime]}
-            onValueChange={handleSeek}
-            className="flex-1"
+      <footer className="h-40 border-t bg-background/95 backdrop-blur px-8 flex flex-col justify-center gap-2">
+        {/* Waveform and Seekbar */}
+        <div className="w-full flex flex-col gap-1">
+          <WaveformDisplay
+            b64Data={rawB64}
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={(t: number) => {
+              if (audioRef.current) audioRef.current.currentTime = t;
+              setCurrentTime(t);
+            }}
+            aPoint={aPoint}
+            bPoint={bPoint}
           />
-          <span className="text-[10px] font-mono text-muted-foreground w-10">{formatTime(duration)}</span>
+
+          <div className="flex items-center gap-3 w-full">
+            <span className="text-[10px] font-mono text-muted-foreground w-10 text-right">{formatTime(currentTime)}</span>
+            <Slider
+              min={0}
+              max={duration || 0}
+              step={0.1}
+              value={[currentTime]}
+              onValueChange={handleSeek}
+              className="flex-1"
+            />
+            <span className="text-[10px] font-mono text-muted-foreground w-10">{formatTime(duration)}</span>
+          </div>
         </div>
 
         <div className="flex items-center justify-between">
@@ -525,12 +576,41 @@ function App() {
                 size="icon"
                 className={isLoop ? "text-primary bg-primary/10 border-primary/20" : "text-muted-foreground"}
                 onClick={() => setIsLoop(!isLoop)}
-                title="ループ再生"
+                title="1曲ループ"
               >
                 <Repeat className="h-4 w-4" />
              </Button>
 
-             <div className="flex flex-col min-w-0">
+             <div className="flex items-center gap-1 border rounded-lg p-1 bg-muted/20 ml-2">
+                <Button
+                  variant={aPoint !== null ? "secondary" : "ghost"}
+                  size="xs"
+                  className="h-7 text-[10px] px-2"
+                  onClick={setA}
+                >
+                  A
+                </Button>
+                <Button
+                  variant={bPoint !== null ? "secondary" : "ghost"}
+                  size="xs"
+                  className="h-7 text-[10px] px-2"
+                  onClick={setB}
+                >
+                  B
+                </Button>
+                {(aPoint !== null || bPoint !== null) && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="h-7 text-[10px] px-2 text-destructive hover:text-destructive"
+                    onClick={clearAB}
+                  >
+                    解除
+                  </Button>
+                )}
+             </div>
+
+             <div className="flex flex-col min-w-0 ml-4">
                 <span className="text-xs font-bold truncate leading-none mb-1">
                   {selectedFile ? (selectedFile.title || selectedFile.filename) : "曲が選択されていません"}
                 </span>
