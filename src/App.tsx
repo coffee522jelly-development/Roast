@@ -19,7 +19,8 @@ import {
   Volume2,
   Flame,
   LayoutGrid,
-  List
+  List,
+  RotateCw
 } from "lucide-react";
 import "./App.css";
 
@@ -192,13 +193,28 @@ function App() {
 
   async function updateMetadata(file: Mp3Metadata) {
     try {
-      await invoke("update_mp3_metadata", { path: file.path, metadata: file });
-      setStatus("メタデータを更新しました");
+      // 1. Check if filename changed
+      const originalFile = mp3Files.find(f => f.path === file.path);
+      let currentPath = file.path;
+
+      if (originalFile && originalFile.filename !== file.filename) {
+        setStatus("リネーム中...");
+        const newPath: string = await invoke("rename_mp3_file", {
+          path: file.path,
+          newName: file.filename
+        });
+        currentPath = newPath;
+      }
+
+      // 2. Update tags
+      await invoke("update_mp3_metadata", { path: currentPath, metadata: file });
+
+      setStatus("更新が完了しました");
       setEditingFile(null);
       if (settings.defaultFolder) loadMp3Files(settings.defaultFolder);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setStatus("メタデータの更新に失敗しました");
+      setStatus(`更新失敗: ${err.message || err}`);
     }
   }
 
@@ -438,6 +454,15 @@ function App() {
           <Button variant="ghost" size="xs" className="h-7 border bg-muted/30" onClick={() => setShowSettings(true)}>
             <SettingsIcon className="h-3 w-3 mr-2" />
             設定
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            className="h-7 border bg-muted/30"
+            onClick={() => settings.defaultFolder && loadMp3Files(settings.defaultFolder)}
+          >
+            <RotateCw className="h-3 w-3 mr-2" />
+            更新
           </Button>
           {settings.defaultFolder && (
             <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono opacity-60">

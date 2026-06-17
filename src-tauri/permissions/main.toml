@@ -8,5 +8,6 @@ commands.allow = [
     "organize_mp3",
     "read_audio_file",
     "delete_mp3",
+    "rename_mp3_file",
     "log_to_file"
 ]

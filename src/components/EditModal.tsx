@@ -20,6 +20,18 @@ export function EditModal({ file, onSave, onCancel, onChange }: EditModalProps) 
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="filename" className="text-right font-bold">ファイル名</Label>
+            <div className="col-span-3 flex flex-col gap-1">
+              <Input
+                id="filename"
+                value={file.filename}
+                onChange={(e) => onChange({ ...file, filename: e.target.value })}
+                className="text-xs border-primary/20"
+              />
+              <span className="text-[9px] text-muted-foreground">※物理的なファイル名が変更されます</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">タイトル</Label>
             <Input
               id="title"

@@ -30,6 +30,7 @@ pub fn run() {
             mp3::organize_mp3,        // アーティスト名に基づいた自動フォルダ整理
             mp3::read_audio_file,     // 再生用に音声ファイルをBase64で読み込み
             mp3::delete_mp3,          // ファイルの物理削除
+            mp3::rename_mp3_file,     // ファイル名の変更
             logger::log_to_file       // フロントエンドからのエラー情報をファイルに記録
         ])
 

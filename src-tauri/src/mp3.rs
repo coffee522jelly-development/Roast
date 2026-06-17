@@ -227,6 +227,28 @@ pub fn delete_mp3(path: String) -> Result<(), String> {
     fs::remove_file(path).map_err(|e| format!("ファイル削除失敗: {}", e))
 }
 
+#[tauri::command]
+pub fn rename_mp3_file(path: String, new_name: String) -> Result<String, String> {
+    let old_path = PathBuf::from(&path);
+    let parent = old_path.parent().ok_or("親ディレクトリが見つかりません")?;
+
+    // Ensure the new name has the .mp3 extension
+    let mut new_filename = new_name;
+    if !new_filename.to_lowercase().ends_with(".mp3") {
+        new_filename.push_str(".mp3");
+    }
+
+    let new_path = parent.join(new_filename);
+
+    if new_path.exists() {
+        return Err("同名のファイルが既に存在します".to_string());
+    }
+
+    fs::rename(&old_path, &new_path).map_err(|e| format!("リネーム失敗: {}", e))?;
+
+    Ok(new_path.to_string_lossy().to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
