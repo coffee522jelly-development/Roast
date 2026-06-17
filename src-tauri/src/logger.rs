@@ -19,7 +19,7 @@ pub fn init() {
         let msg = format!("PANIC: {}", panic_info);
         log(&msg);
     }));
-    log(&format!("--- ROAST STARTUP at {} ---", chrono::Local::now().format("%Y-%m-%d %H:%M:%S")));
+    log("--- ROAST STARTUP ---");
 }
 
 #[tauri::command]
