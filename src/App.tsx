@@ -555,32 +555,36 @@ function App() {
       </main>
 
       {/* Player Bar */}
-      <footer className="h-40 border-t bg-background/95 backdrop-blur px-8 flex flex-col justify-center gap-2">
-        {/* Waveform and Seekbar */}
-        <div className="w-full flex flex-col gap-1">
-          <WaveformDisplay
-            b64Data={rawB64}
-            currentTime={currentTime}
-            duration={duration}
-            onSeek={(t: number) => {
-              if (audioRef.current) audioRef.current.currentTime = t;
-              setCurrentTime(t);
-            }}
-            aPoint={aPoint}
-            bPoint={bPoint}
-          />
-
-          <div className="flex items-center gap-3 w-full">
-            <span className="text-[10px] font-mono text-muted-foreground w-10 text-right">{formatTime(currentTime)}</span>
-            <Slider
-              min={0}
-              max={duration || 0}
-              step={0.1}
-              value={[currentTime]}
-              onValueChange={handleSeek}
-              className="flex-1"
+      <footer className="h-44 border-t bg-background/95 backdrop-blur px-8 flex flex-col justify-center gap-1 z-30">
+        {/* Waveform and Seekbar Container */}
+        <div className="w-full flex flex-col pt-2">
+          <div className="relative w-full h-12 mb-1">
+            <WaveformDisplay
+              b64Data={rawB64}
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={(t: number) => {
+                if (audioRef.current) audioRef.current.currentTime = t;
+                setCurrentTime(t);
+              }}
+              aPoint={aPoint}
+              bPoint={bPoint}
             />
-            <span className="text-[10px] font-mono text-muted-foreground w-10">{formatTime(duration)}</span>
+          </div>
+
+          <div className="flex items-center gap-3 w-full h-6">
+            <span className="text-[10px] font-mono text-muted-foreground w-12 text-right">{formatTime(currentTime)}</span>
+            <div className="flex-1 relative flex items-center">
+              <Slider
+                min={0}
+                max={duration || 0}
+                step={0.1}
+                value={[currentTime]}
+                onValueChange={handleSeek}
+                className="w-full relative z-10"
+              />
+            </div>
+            <span className="text-[10px] font-mono text-muted-foreground w-12">{formatTime(duration)}</span>
           </div>
         </div>
 

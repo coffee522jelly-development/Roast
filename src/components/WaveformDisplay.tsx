@@ -66,15 +66,18 @@ export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint
 
     ctx.clearRect(0, 0, width, height);
 
-    // Get primary color from CSS
-    const primaryColor = getComputedStyle(document.body).getPropertyValue("--primary");
-    const mutedColor = "rgba(128, 128, 128, 0.2)";
+    // Get primary color from CSS (Tauri/shadcn usually stores HSL values like "240 5.9% 10%")
+    const rawPrimary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
+    // Convert "240 5.9% 10%" to "hsl(240, 5.9%, 10%)" for Canvas
+    const primaryHsl = rawPrimary ? `hsl(${rawPrimary.split(" ").join(",")})` : "#3b82f6";
+    const primaryHslAlpha = rawPrimary ? `hsla(${rawPrimary.split(" ").join(",")}, 0.3)` : "rgba(59, 130, 246, 0.3)";
+    const mutedColor = "rgba(128, 128, 128, 0.15)";
 
     peaks.forEach((peak, i) => {
       const x = i * barWidth;
       const progress = (i / peaks.length) * duration;
       const isPlayed = progress < currentTime;
-      const barHeight = peak * height * 0.8;
+      const barHeight = Math.max(2, peak * height * 0.85); // Minimum 2px height for visual consistency
 
       // Check if in AB loop
       let isInAB = false;
@@ -82,12 +85,13 @@ export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint
         isInAB = progress >= aPoint && progress <= bPoint;
       }
 
-      ctx.fillStyle = isPlayed ? `hsl(${primaryColor})` : mutedColor;
+      ctx.fillStyle = isPlayed ? primaryHsl : mutedColor;
       if (isInAB) {
-        ctx.fillStyle = isPlayed ? `hsl(${primaryColor})` : `hsla(${primaryColor}, 0.4)`;
+        ctx.fillStyle = isPlayed ? primaryHsl : primaryHslAlpha;
       }
 
-      ctx.fillRect(x, (height - barHeight) / 2, barWidth - 1, barHeight);
+      // Draw centered bars
+      ctx.fillRect(x, (height - barHeight) / 2, Math.max(1, barWidth - 1), barHeight);
     });
 
     // Draw A-B markers
