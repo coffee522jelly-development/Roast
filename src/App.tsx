@@ -20,7 +20,9 @@ import {
   Flame,
   LayoutGrid,
   List,
-  RotateCw
+  RotateCw,
+  Maximize2,
+  Minimize2
 } from "lucide-react";
 import "./App.css";
 
@@ -58,6 +60,7 @@ function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+  const [isFocusMode, setIsFocusMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [sortField, setSortField] = useState<"filename" | "artist" | "quality">("filename");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -453,20 +456,27 @@ function App() {
              <Flame className="h-5 w-5 text-primary fill-primary/10" />
              <h1 className="text-sm font-bold tracking-[0.2em] uppercase">Roast</h1>
           </div>
-          <Button variant="ghost" size="xs" className="h-7 border bg-muted/30" onClick={() => setShowSettings(true)}>
-            <SettingsIcon className="h-3 w-3 mr-2" />
-            設定
-          </Button>
-          <Button
-            variant="ghost"
-            size="xs"
-            className="h-7 border bg-muted/30"
-            onClick={() => settings.defaultFolder && loadMp3Files(settings.defaultFolder)}
-          >
-            <RotateCw className="h-3 w-3 mr-2" />
-            更新
-          </Button>
-          {settings.defaultFolder && (
+          <div className="flex items-center gap-1 border rounded-md p-1 bg-muted/20">
+            <Button
+              variant="ghost"
+              size="xs"
+              className="h-8 w-8 p-0"
+              onClick={() => setShowSettings(true)}
+              title="設定"
+            >
+              <SettingsIcon className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="xs"
+              className="h-8 w-8 p-0"
+              onClick={() => settings.defaultFolder && loadMp3Files(settings.defaultFolder)}
+              title="ライブラリを更新"
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          {settings.defaultFolder && !isFocusMode && (
             <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono opacity-60">
               {settings.defaultFolder}
             </span>
@@ -492,40 +502,72 @@ function App() {
           )}
           <div className="flex items-center gap-1 border rounded-md p-1 bg-muted/20">
             <Button
-              variant={viewMode === "table" ? "secondary" : "ghost"}
+              variant={isFocusMode ? "secondary" : "ghost"}
               size="xs"
               className="h-7 w-7 p-0"
-              onClick={() => setViewMode("table")}
-              title="リスト表示"
+              onClick={() => setIsFocusMode(!isFocusMode)}
+              title={isFocusMode ? "標準モード" : "集中モード"}
             >
-              <List className="h-3.5 w-3.5" />
+              {isFocusMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
             </Button>
-            <Button
-              variant={viewMode === "grid" ? "secondary" : "ghost"}
-              size="xs"
-              className="h-7 w-7 p-0"
-              onClick={() => setViewMode("grid")}
-              title="アルバムアート表示"
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </Button>
+
+            {!isFocusMode && (
+              <>
+                <Button
+                  variant={viewMode === "table" ? "secondary" : "ghost"}
+                  size="xs"
+                  className="h-7 w-7 p-0"
+                  onClick={() => setViewMode("table")}
+                  title="リスト表示"
+                >
+                  <List className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant={viewMode === "grid" ? "secondary" : "ghost"}
+                  size="xs"
+                  className="h-7 w-7 p-0"
+                  onClick={() => setViewMode("grid")}
+                  title="アルバムアート表示"
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                </Button>
+              </>
+            )}
           </div>
 
-          <Button
-            variant={isSidebarOpen ? "secondary" : "ghost"}
-            size="xs"
-            className="h-8 w-8 p-0 border"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          >
-            <Info className="h-4 w-4" />
-          </Button>
+          {!isFocusMode && (
+            <Button
+              variant={isSidebarOpen ? "secondary" : "ghost"}
+              size="xs"
+              className="h-8 w-8 p-0 border"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            >
+              <Info className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </header>
 
       <main className="flex flex-1 overflow-hidden">
         {/* Main Area */}
         <div className="flex-1 overflow-hidden p-4">
-          {viewMode === "table" ? (
+          {isFocusMode ? (
+            <div className="h-full flex flex-col items-center justify-center gap-8 animate-in fade-in zoom-in duration-500">
+              <div className="relative aspect-square w-[400px] lg:w-[500px] rounded-2xl overflow-hidden shadow-2xl bg-muted ring-1 ring-primary/10">
+                {selectedArtwork ? (
+                  <img src={selectedArtwork} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center opacity-10">
+                    <Flame className="w-32 h-32" />
+                  </div>
+                )}
+              </div>
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-bold tracking-tight">{selectedFile?.title || selectedFile?.filename || "No Selection"}</h2>
+                <p className="text-sm uppercase tracking-[0.4em] text-muted-foreground opacity-70">{selectedFile?.artist || "Unknown Artist"}</p>
+              </div>
+            </div>
+          ) : viewMode === "table" ? (
             <Mp3Table
               files={filteredFiles}
               onEdit={(file) => setEditingFile(file)}
@@ -549,7 +591,7 @@ function App() {
         </div>
 
         {/* Sidebar (Detail View) */}
-        {isSidebarOpen && (
+        {isSidebarOpen && !isFocusMode && (
           <aside className="w-80 h-full border-l bg-muted/10 overflow-hidden transition-all duration-300">
             <DetailView file={selectedFile} artwork={selectedArtwork} />
           </aside>
