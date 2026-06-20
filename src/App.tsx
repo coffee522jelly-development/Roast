@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { Mp3Table } from "./components/Mp3Table";
 import { Mp3GridView } from "./components/Mp3GridView";
 import { WaveformDisplay } from "./components/WaveformDisplay";
@@ -21,8 +22,8 @@ import {
   LayoutGrid,
   List,
   RotateCw,
-  Maximize2,
-  Minimize2
+  Maximize,
+  Shrink
 } from "lucide-react";
 import "./App.css";
 
@@ -418,6 +419,20 @@ function App() {
     }
   };
 
+  const toggleFocusMode = async () => {
+    const nextMode = !isFocusMode;
+    setIsFocusMode(nextMode);
+
+    const win = getCurrentWindow();
+    if (nextMode) {
+      // Small vertical size for Focus Mode
+      await win.setSize(new LogicalSize(500, 800));
+    } else {
+      // Large horizontal size for Standard Mode
+      await win.setSize(new LogicalSize(1280, 800));
+    }
+  };
+
   const updateSettings = (newSettings: Settings) => {
     setSettings(newSettings);
     localStorage.setItem("roast-settings", JSON.stringify(newSettings));
@@ -505,10 +520,10 @@ function App() {
               variant={isFocusMode ? "secondary" : "ghost"}
               size="xs"
               className="h-7 w-7 p-0"
-              onClick={() => setIsFocusMode(!isFocusMode)}
+              onClick={toggleFocusMode}
               title={isFocusMode ? "標準モード" : "集中モード"}
             >
-              {isFocusMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              {isFocusMode ? <Maximize className="h-3.5 w-3.5" /> : <Shrink className="h-3.5 w-3.5" />}
             </Button>
 
             {!isFocusMode && (
@@ -552,19 +567,19 @@ function App() {
         {/* Main Area */}
         <div className="flex-1 overflow-hidden p-4">
           {isFocusMode ? (
-            <div className="h-full flex flex-col items-center justify-center gap-8 animate-in fade-in zoom-in duration-500">
-              <div className="relative aspect-square w-[400px] lg:w-[500px] rounded-2xl overflow-hidden shadow-2xl bg-muted ring-1 ring-primary/10">
+            <div className="h-full flex flex-col items-center justify-center gap-10 animate-in fade-in zoom-in duration-500 max-w-full px-4">
+              <div className="relative aspect-square w-full max-w-[420px] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-muted ring-1 ring-primary/10">
                 {selectedArtwork ? (
                   <img src={selectedArtwork} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center opacity-10">
-                    <Flame className="w-32 h-32" />
+                    <Flame className="w-24 h-24" />
                   </div>
                 )}
               </div>
-              <div className="text-center space-y-2">
-                <h2 className="text-2xl font-bold tracking-tight">{selectedFile?.title || selectedFile?.filename || "No Selection"}</h2>
-                <p className="text-sm uppercase tracking-[0.4em] text-muted-foreground opacity-70">{selectedFile?.artist || "Unknown Artist"}</p>
+              <div className="text-center space-y-3 w-full">
+                <h2 className="text-xl font-bold tracking-tight truncate px-2">{selectedFile?.title || selectedFile?.filename || "No Selection"}</h2>
+                <p className="text-[10px] uppercase tracking-[0.5em] text-muted-foreground opacity-60 truncate">{selectedFile?.artist || "Unknown Artist"}</p>
               </div>
             </div>
           ) : viewMode === "table" ? (
