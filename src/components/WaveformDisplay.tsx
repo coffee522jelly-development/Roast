@@ -8,9 +8,10 @@ interface WaveformDisplayProps {
   aPoint: number | null;
   bPoint: number | null;
   opacity: number;
+  theme: string; // Add theme to trigger re-renders
 }
 
-export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint, bPoint, opacity }: WaveformDisplayProps) {
+export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint, bPoint, opacity, theme }: WaveformDisplayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [peaks, setPeaks] = useState<number[]>([]);
 
@@ -67,11 +68,14 @@ export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint
 
     ctx.clearRect(0, 0, width, height);
 
-    // Get primary color from CSS (Tauri/shadcn usually stores HSL values like "240 5.9% 10%")
-    const rawPrimary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
+    // Get primary color from document.body where the data-theme is applied
+    const rawPrimary = getComputedStyle(document.body).getPropertyValue("--primary").trim();
+
     // Convert "240 5.9% 10%" to "hsl(240, 5.9%, 10%)" for Canvas
-    const primaryHsl = rawPrimary ? `hsla(${rawPrimary.split(" ").join(",")}, ${opacity})` : `rgba(59, 130, 246, ${opacity})`;
-    const primaryHslFull = rawPrimary ? `hsl(${rawPrimary.split(" ").join(",")})` : "#3b82f6";
+    // Use regex to replace spaces with commas for robust HSL parsing
+    const formattedValues = rawPrimary.split(/\s+/).join(",");
+    const primaryHsl = rawPrimary ? `hsla(${formattedValues}, ${opacity})` : `rgba(59, 130, 246, ${opacity})`;
+    const primaryHslFull = rawPrimary ? `hsl(${formattedValues})` : "#3b82f6";
     const mutedColor = `rgba(128, 128, 128, ${opacity * 0.3})`;
 
     peaks.forEach((peak, i) => {
@@ -111,7 +115,7 @@ export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint
       ctx.fillText("B", bx + 4, 10);
     }
 
-  }, [peaks, currentTime, duration, aPoint, bPoint, opacity]);
+  }, [peaks, currentTime, duration, aPoint, bPoint, opacity, theme]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();

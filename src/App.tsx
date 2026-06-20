@@ -629,6 +629,7 @@ function App() {
               aPoint={aPoint}
               bPoint={bPoint}
               opacity={settings.waveformOpacity}
+              theme={settings.theme}
             />
           </div>
 
