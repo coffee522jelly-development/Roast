@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Slider } from "./ui/slider";
 import { FolderOpen, Check } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -10,6 +11,7 @@ interface Settings {
   defaultFolder: string | null;
   theme: string;
   bgMode: string;
+  waveformOpacity: number;
 }
 
 interface SettingsModalProps {
@@ -89,6 +91,20 @@ export function SettingsModal({ settings, onSave, onClose }: SettingsModalProps)
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs uppercase tracking-widest opacity-70">波形の視認性</Label>
+              <span className="text-[10px] font-mono opacity-50">{Math.round(settings.waveformOpacity * 100)}%</span>
+            </div>
+            <Slider
+              min={0.1}
+              max={1.0}
+              step={0.05}
+              value={[settings.waveformOpacity]}
+              onValueChange={(val) => onSave({ ...settings, waveformOpacity: val[0] })}
+            />
           </div>
 
           <div className="space-y-3">

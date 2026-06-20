@@ -42,16 +42,18 @@ interface Settings {
   defaultFolder: string | null;
   theme: string;
   bgMode: string;
+  waveformOpacity: number;
 }
 
 function App() {
   const [settings, setSettings] = useState<Settings>(() => {
     try {
       const saved = localStorage.getItem("roast-settings");
-      return saved ? JSON.parse(saved) : { defaultFolder: null, theme: "zinc", bgMode: "light" };
+      const defaults = { defaultFolder: null, theme: "zinc", bgMode: "light", waveformOpacity: 0.5 };
+      return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
     } catch (e) {
       console.error("Failed to parse settings:", e);
-      return { defaultFolder: null, theme: "zinc", bgMode: "light" };
+      return { defaultFolder: null, theme: "zinc", bgMode: "light", waveformOpacity: 0.5 };
     }
   });
   const [showSettings, setShowSettings] = useState(false);
@@ -569,6 +571,7 @@ function App() {
               }}
               aPoint={aPoint}
               bPoint={bPoint}
+              opacity={settings.waveformOpacity}
             />
           </div>
 

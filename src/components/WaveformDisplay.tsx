@@ -7,9 +7,10 @@ interface WaveformDisplayProps {
   onSeek: (time: number) => void;
   aPoint: number | null;
   bPoint: number | null;
+  opacity: number;
 }
 
-export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint, bPoint }: WaveformDisplayProps) {
+export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint, bPoint, opacity }: WaveformDisplayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [peaks, setPeaks] = useState<number[]>([]);
 
@@ -69,9 +70,9 @@ export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint
     // Get primary color from CSS (Tauri/shadcn usually stores HSL values like "240 5.9% 10%")
     const rawPrimary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
     // Convert "240 5.9% 10%" to "hsl(240, 5.9%, 10%)" for Canvas
-    const primaryHsl = rawPrimary ? `hsl(${rawPrimary.split(" ").join(",")})` : "#3b82f6";
-    const primaryHslAlpha = rawPrimary ? `hsla(${rawPrimary.split(" ").join(",")}, 0.3)` : "rgba(59, 130, 246, 0.3)";
-    const mutedColor = "rgba(128, 128, 128, 0.15)";
+    const primaryHsl = rawPrimary ? `hsla(${rawPrimary.split(" ").join(",")}, ${opacity})` : `rgba(59, 130, 246, ${opacity})`;
+    const primaryHslFull = rawPrimary ? `hsl(${rawPrimary.split(" ").join(",")})` : "#3b82f6";
+    const mutedColor = `rgba(128, 128, 128, ${opacity * 0.3})`;
 
     peaks.forEach((peak, i) => {
       const x = i * barWidth;
@@ -85,9 +86,9 @@ export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint
         isInAB = progress >= aPoint && progress <= bPoint;
       }
 
-      ctx.fillStyle = isPlayed ? primaryHsl : mutedColor;
+      ctx.fillStyle = isPlayed ? primaryHslFull : mutedColor;
       if (isInAB) {
-        ctx.fillStyle = isPlayed ? primaryHsl : primaryHslAlpha;
+        ctx.fillStyle = isPlayed ? primaryHslFull : primaryHsl;
       }
 
       // Draw centered bars
@@ -110,7 +111,7 @@ export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint
       ctx.fillText("B", bx + 4, 10);
     }
 
-  }, [peaks, currentTime, duration, aPoint, bPoint]);
+  }, [peaks, currentTime, duration, aPoint, bPoint, opacity]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
