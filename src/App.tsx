@@ -614,50 +614,43 @@ function App() {
       </main>
 
       {/* Player Bar */}
-      <footer className="h-44 border-t bg-background/95 backdrop-blur px-8 flex flex-col justify-center gap-1 z-30">
+      <footer className="h-44 border-t bg-background/95 backdrop-blur px-10 flex flex-col justify-center gap-1 z-30">
         {/* Waveform and Seekbar Container */}
-        <div className="w-full pt-2">
-          <div className="flex items-start gap-3 w-full">
-             {/* Left margin for alignment with time label */}
-             <div className="w-12" />
-
-             <div className="flex-1 flex flex-col gap-0.5">
-                <div className="relative w-full h-12">
-                  <WaveformDisplay
-                    b64Data={rawB64}
-                    currentTime={currentTime}
-                    duration={duration}
-                    onSeek={(t: number) => {
-                      if (audioRef.current) audioRef.current.currentTime = t;
-                      setCurrentTime(t);
-                    }}
-                    aPoint={aPoint}
-                    bPoint={bPoint}
-                    opacity={settings.waveformOpacity}
-                    theme={settings.theme}
-                  />
-                </div>
-
-                <div className="relative w-full h-4 flex items-center">
-                  <Slider
-                    min={0}
-                    max={duration || 0}
-                    step={0.1}
-                    value={[currentTime]}
-                    onValueChange={handleSeek}
-                    className="w-full relative z-10"
-                  />
-                </div>
-             </div>
-
-             {/* Right margin for alignment with time label */}
-             <div className="w-12" />
+        <div className="w-full flex flex-col gap-0.5 pt-2">
+          <div className="relative w-full h-14">
+            <WaveformDisplay
+              b64Data={rawB64}
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={(t: number) => {
+                if (audioRef.current) audioRef.current.currentTime = t;
+                setCurrentTime(t);
+              }}
+              aPoint={aPoint}
+              bPoint={bPoint}
+              opacity={settings.waveformOpacity}
+              theme={settings.theme}
+            />
           </div>
 
-          {/* Time Labels Overlayed or in second row */}
-          <div className="flex items-center justify-between w-full -mt-4 px-0 pointer-events-none">
-            <span className="text-[10px] font-mono text-muted-foreground w-12 text-right">{formatTime(currentTime)}</span>
-            <span className="text-[10px] font-mono text-muted-foreground w-12">{formatTime(duration)}</span>
+          <div className="relative w-full h-4 flex items-center">
+            <Slider
+              min={0}
+              max={duration || 0}
+              step={0.1}
+              value={[currentTime]}
+              onValueChange={handleSeek}
+              className="w-full relative z-10"
+            />
+          </div>
+
+          <div className="flex items-center justify-between px-0.5">
+            <span className="text-[9px] font-mono text-muted-foreground opacity-70">
+              {formatTime(currentTime)}
+            </span>
+            <span className="text-[9px] font-mono text-muted-foreground opacity-70">
+              {formatTime(duration)}
+            </span>
           </div>
         </div>
 
