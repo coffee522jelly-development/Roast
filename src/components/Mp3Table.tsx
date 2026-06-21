@@ -7,15 +7,14 @@ import {
   Clock,
   Copy,
   Check,
-  ExternalLink,
+  Folder,
   ChevronUp,
   ChevronDown,
-  PlayCircle,
   Play,
   Trash2
 } from "lucide-react";
 import { useState } from "react";
-import { revealItemInDir, openPath } from "@tauri-apps/plugin-opener";
+import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -172,19 +171,10 @@ export function Mp3Table({
                       variant="ghost"
                       size="xs"
                       className="h-6 w-6 p-0"
-                      onClick={(e) => { e.stopPropagation(); openPath(file.path); }}
-                      title="外部プレイヤーで開く"
-                    >
-                      <PlayCircle className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      className="h-6 w-6 p-0"
                       onClick={(e) => { e.stopPropagation(); revealItemInDir(file.path); }}
                       title="フォルダで開く"
                     >
-                      <ExternalLink className="h-3 w-3" />
+                      <Folder className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="ghost"
