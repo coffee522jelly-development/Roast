@@ -126,7 +126,7 @@ export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint
   };
 
   return (
-    <div className="w-full h-12 relative cursor-pointer group mb-2">
+    <div className="w-full h-12 relative cursor-pointer group">
       <canvas
         ref={canvasRef}
         width={1000}
