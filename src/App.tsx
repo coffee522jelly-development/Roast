@@ -86,6 +86,55 @@ function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
 
+  // Web Audio API refs
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const lpfNodeRef = useRef<BiquadFilterNode | null>(null);
+  const hpfNodeRef = useRef<BiquadFilterNode | null>(null);
+
+  const [lpfFreq, setLpfFreq] = useState(20000);
+  const [hpfFreq, setHpfFreq] = useState(20);
+  const [isFilterEnabled, setIsFilterEnabled] = useState(false);
+
+  // Initialize Web Audio API
+  useEffect(() => {
+    if (audioRef.current && !audioContextRef.current) {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = audioContext;
+
+      const lpf = audioContext.createBiquadFilter();
+      lpf.type = "lowpass";
+      lpf.frequency.value = 20000;
+      lpfNodeRef.current = lpf;
+
+      const hpf = audioContext.createBiquadFilter();
+      hpf.type = "highpass";
+      hpf.frequency.value = 20;
+      hpfNodeRef.current = hpf;
+
+      const source = audioContext.createMediaElementSource(audioRef.current);
+      sourceNodeRef.current = source;
+
+      // Connect: source -> LPF -> HPF -> destination
+      source.connect(lpf);
+      lpf.connect(hpf);
+      hpf.connect(audioContext.destination);
+    }
+  }, []);
+
+  // Update filter parameters
+  useEffect(() => {
+    if (lpfNodeRef.current && hpfNodeRef.current) {
+      if (isFilterEnabled) {
+        lpfNodeRef.current.frequency.setTargetAtTime(lpfFreq, audioContextRef.current!.currentTime, 0.05);
+        hpfNodeRef.current.frequency.setTargetAtTime(hpfFreq, audioContextRef.current!.currentTime, 0.05);
+      } else {
+        lpfNodeRef.current.frequency.setTargetAtTime(20000, audioContextRef.current!.currentTime, 0.05);
+        hpfNodeRef.current.frequency.setTargetAtTime(20, audioContextRef.current!.currentTime, 0.05);
+      }
+    }
+  }, [lpfFreq, hpfFreq, isFilterEnabled]);
+
   // Apply theme and bg mode
   useEffect(() => {
     document.body.setAttribute("data-theme", settings.theme);
@@ -270,6 +319,9 @@ function App() {
 
   const togglePlay = async () => {
     if (!audioSrc) return;
+    if (audioContextRef.current?.state === "suspended") {
+      audioContextRef.current.resume();
+    }
     if (audioRef.current) {
       const audio = audioRef.current;
       if (isPlaying) {
@@ -713,6 +765,57 @@ function App() {
                   {selectedFile?.artist || "—"}
                 </span>
              </div>
+           </div>
+
+           {/* Filter Controls */}
+           <div className="flex items-center gap-6 border-x px-8 mx-4 h-16">
+              <div className="flex flex-col gap-2">
+                 <div className="flex items-center justify-between">
+                    <span className="text-[9px] uppercase tracking-widest font-bold opacity-40">Filter System</span>
+                    <Button
+                      variant={isFilterEnabled ? "secondary" : "ghost"}
+                      size="xs"
+                      className={`h-5 px-2 text-[8px] font-bold ${isFilterEnabled ? "text-primary border-primary/20" : "opacity-50"}`}
+                      onClick={() => setIsFilterEnabled(!isFilterEnabled)}
+                    >
+                      {isFilterEnabled ? "ACTIVE" : "BYPASS"}
+                    </Button>
+                 </div>
+                 <div className="flex items-center gap-6">
+                    <div className="flex flex-col gap-1.5 w-24">
+                       <div className="flex justify-between items-center text-[8px] font-mono">
+                          <span className="opacity-60">LPF</span>
+                          <span className={isFilterEnabled ? "text-primary" : "opacity-40"}>
+                            {lpfFreq < 1000 ? `${lpfFreq}Hz` : `${(lpfFreq/1000).toFixed(1)}k`}
+                          </span>
+                       </div>
+                       <Slider
+                         min={200}
+                         max={20000}
+                         step={100}
+                         value={[lpfFreq]}
+                         onValueChange={(v) => setLpfFreq(v[0])}
+                         disabled={!isFilterEnabled}
+                         className="w-full"
+                       />
+                    </div>
+                    <div className="flex flex-col gap-1.5 w-24">
+                       <div className="flex justify-between items-center text-[8px] font-mono">
+                          <span className="opacity-60">HPF</span>
+                          <span className={isFilterEnabled ? "text-primary" : "opacity-40"}>{hpfFreq}Hz</span>
+                       </div>
+                       <Slider
+                         min={20}
+                         max={5000}
+                         step={10}
+                         value={[hpfFreq]}
+                         onValueChange={(v) => setHpfFreq(v[0])}
+                         disabled={!isFilterEnabled}
+                         className="w-full"
+                       />
+                    </div>
+                 </div>
+              </div>
            </div>
 
            {/* Volume Control */}
