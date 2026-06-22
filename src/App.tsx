@@ -768,6 +768,7 @@ function App() {
            </div>
 
            {/* Filter Controls */}
+           {!isFocusMode && (
            <div className="flex items-center gap-6 border-x px-8 mx-4 h-16">
               <div className="flex flex-col gap-2">
                  <div className="flex items-center justify-between">
@@ -817,6 +818,7 @@ function App() {
                  </div>
               </div>
            </div>
+           )}
 
            {/* Volume Control */}
            <div className="flex items-center gap-3 w-[200px]">
