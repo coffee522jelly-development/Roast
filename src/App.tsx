@@ -666,7 +666,7 @@ function App() {
       </main>
 
       {/* Player Bar */}
-      <footer className="h-44 border-t bg-background/95 backdrop-blur px-10 flex flex-col justify-center gap-1 z-30">
+      <footer className={`h-44 border-t bg-background/95 backdrop-blur ${isFocusMode ? "px-6" : "px-10"} flex flex-col justify-center gap-1 z-30`}>
         {/* Waveform and Seekbar Container */}
         <div className="w-full flex flex-col gap-0.5 pt-2">
           <div className="relative w-full h-14">
@@ -706,62 +706,66 @@ function App() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-           <div className="flex items-center gap-4 w-[300px]">
-             <Button
-                variant="default"
-                size="icon"
-                className="h-10 w-10 rounded-full shadow-lg"
-                onClick={togglePlay}
-                disabled={status.startsWith("エラー") || status.startsWith("読み込み失敗")}
-              >
-                {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
-             </Button>
-
-             <Button
-                variant={isLoop ? "secondary" : "ghost"}
-                size="icon"
-                className={isLoop ? "text-primary bg-primary/10 border-primary/20" : "text-muted-foreground"}
-                onClick={() => setIsLoop(!isLoop)}
-                title="1曲ループ"
-              >
-                <Repeat className="h-4 w-4" />
-             </Button>
-
-             <div className="flex items-center gap-1 border rounded-lg p-1 bg-muted/20 ml-2">
-                <Button
-                  variant={aPoint !== null ? "secondary" : "ghost"}
-                  size="xs"
-                  className="h-7 text-[10px] px-2"
-                  onClick={setA}
+        <div className="flex items-center justify-between gap-4 overflow-hidden">
+           <div className={`flex items-center gap-4 ${isFocusMode ? "flex-1" : "min-w-[300px]"} min-w-0`}>
+             <div className="flex items-center gap-2 shrink-0">
+               <Button
+                  variant="default"
+                  size="icon"
+                  className="h-10 w-10 rounded-full shadow-lg"
+                  onClick={togglePlay}
+                  disabled={status.startsWith("エラー") || status.startsWith("読み込み失敗")}
                 >
-                  A
-                </Button>
-                <Button
-                  variant={bPoint !== null ? "secondary" : "ghost"}
-                  size="xs"
-                  className="h-7 text-[10px] px-2"
-                  onClick={setB}
+                  {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+               </Button>
+
+               <Button
+                  variant={isLoop ? "secondary" : "ghost"}
+                  size="icon"
+                  className={isLoop ? "text-primary bg-primary/10 border-primary/20 shrink-0" : "text-muted-foreground shrink-0"}
+                  onClick={() => setIsLoop(!isLoop)}
+                  title="1曲ループ"
                 >
-                  B
-                </Button>
-                {(aPoint !== null || bPoint !== null) && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    className="h-7 text-[10px] px-2 text-destructive hover:text-destructive"
-                    onClick={clearAB}
-                  >
-                    解除
-                  </Button>
-                )}
+                  <Repeat className="h-4 w-4" />
+               </Button>
              </div>
 
-             <div className="flex flex-col min-w-0 ml-4">
-                <span className="text-xs font-bold truncate leading-none mb-1">
+             {!isFocusMode && (
+               <div className="flex items-center gap-1 border rounded-lg p-1 bg-muted/20 ml-2 shrink-0">
+                  <Button
+                    variant={aPoint !== null ? "secondary" : "ghost"}
+                    size="xs"
+                    className="h-7 text-[10px] px-2"
+                    onClick={setA}
+                  >
+                    A
+                  </Button>
+                  <Button
+                    variant={bPoint !== null ? "secondary" : "ghost"}
+                    size="xs"
+                    className="h-7 text-[10px] px-2"
+                    onClick={setB}
+                  >
+                    B
+                  </Button>
+                  {(aPoint !== null || bPoint !== null) && (
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-7 text-[10px] px-2 text-destructive hover:text-destructive"
+                      onClick={clearAB}
+                    >
+                      解除
+                    </Button>
+                  )}
+               </div>
+             )}
+
+             <div className="flex flex-col min-w-0 ml-2 overflow-hidden">
+                <span className="text-xs font-bold truncate leading-none mb-1 whitespace-nowrap">
                   {selectedFile ? (selectedFile.title || selectedFile.filename) : "曲が選択されていません"}
                 </span>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate opacity-60 whitespace-nowrap">
                   {selectedFile?.artist || "—"}
                 </span>
              </div>
@@ -821,15 +825,15 @@ function App() {
            )}
 
            {/* Volume Control */}
-           <div className="flex items-center gap-3 w-[200px]">
-              <Volume2 className="h-4 w-4 text-muted-foreground" />
+           <div className={`flex items-center gap-3 ${isFocusMode ? "w-24" : "w-[180px]"} shrink-0 justify-end`}>
+              <Volume2 className="h-4 w-4 text-muted-foreground shrink-0" />
               <Slider
                 min={0}
                 max={1}
                 step={0.01}
                 value={[volume]}
                 onValueChange={handleVolumeChange}
-                className="w-24"
+                className={isFocusMode ? "w-16" : "w-24"}
               />
            </div>
         </div>
