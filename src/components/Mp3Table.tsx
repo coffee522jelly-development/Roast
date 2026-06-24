@@ -11,7 +11,8 @@ import {
   ChevronUp,
   ChevronDown,
   Play,
-  Trash2
+  Trash2,
+  Search
 } from "lucide-react";
 import { useState } from "react";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
@@ -240,9 +241,14 @@ export function Mp3Table({
           </tbody>
         </table>
         {files.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-40 text-muted-foreground text-sm gap-2">
-            <p>MP3ファイルが見つかりません。</p>
-            <p className="text-xs">設定から音楽フォルダを選択してください。</p>
+          <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-muted-foreground gap-4 bg-muted/5">
+            <div className="p-6 rounded-full bg-muted/20">
+              <Search className="h-8 w-8 opacity-20" />
+            </div>
+            <div className="text-center">
+              <p className="text-xs font-medium">該当するファイルが見つかりません</p>
+              <p className="text-[10px] mt-1 opacity-60">検索ワードを変えるか、ライブラリを更新してください。</p>
+            </div>
           </div>
         )}
       </div>

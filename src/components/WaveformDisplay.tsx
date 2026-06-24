@@ -73,7 +73,8 @@ export function WaveformDisplay({ b64Data, currentTime, duration, onSeek, aPoint
 
     // Convert "240 5.9% 10%" to "hsl(240, 5.9%, 10%)" for Canvas
     // Use regex to replace spaces with commas for robust HSL parsing
-    const formattedValues = rawPrimary.split(/\s+/).join(",");
+    // shadcn/ui colors can be "240 5.9% 10%"
+    const formattedValues = rawPrimary.split(/[\s,]+/).filter(Boolean).join(",");
     const primaryHsl = rawPrimary ? `hsla(${formattedValues}, ${opacity})` : `rgba(59, 130, 246, ${opacity})`;
     const primaryHslFull = rawPrimary ? `hsl(${formattedValues})` : "#3b82f6";
     const mutedColor = `rgba(128, 128, 128, ${opacity * 0.3})`;

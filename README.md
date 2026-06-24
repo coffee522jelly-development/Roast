@@ -34,6 +34,8 @@ Roast（ロースト）は、じっくりと音楽ファイルと向き合いた
 4. 「Filter System」を ACTIVE にすると、LPF/HPF スライダーで音質をリアルタイムに調整できます。
 5. 右上のボタンで「集中モード」に切り替え、音楽との対話を楽しめます。
 
+*※外部プレイヤーでの再生機能は削除されました。Roast内部での再生に特化しています。*
+
 ## 技術スタック
 - **Frontend**: React 19, TypeScript, Tailwind CSS, shadcn/ui (Radix UI)
 - **Backend**: Rust, Tauri v2

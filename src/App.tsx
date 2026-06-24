@@ -14,6 +14,7 @@ import {
   Settings as SettingsIcon,
   Info,
   Search,
+  X,
   Play,
   Pause,
   Repeat,
@@ -140,6 +141,20 @@ function App() {
     document.body.setAttribute("data-theme", settings.theme);
     document.body.setAttribute("data-bg-mode", settings.bgMode);
   }, [settings.theme, settings.bgMode]);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+F or Cmd+F to focus search
+      if ((e.ctrlKey || e.metaKey) && e.key === "f") {
+        e.preventDefault();
+        const searchInput = document.getElementById("search-input");
+        if (searchInput) searchInput.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Disable right-click globally
   useEffect(() => {
@@ -430,7 +445,7 @@ function App() {
   const filteredFiles = useMemo(() => {
     let result = [...mp3Files];
 
-    if (searchQuery) {
+    if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(f =>
         (f.filename?.toLowerCase() ?? "").includes(q) ||
@@ -553,12 +568,21 @@ function App() {
         <div className="flex-1 max-w-md mx-8 relative group">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground transition-colors group-focus-within:text-primary" />
           <Input
+            id="search-input"
             type="text"
             placeholder="ライブラリを検索..."
-            className="pl-8 h-8 bg-muted/40 border-transparent focus:bg-background focus:ring-1 focus:ring-primary/20 transition-all text-xs"
+            className="pl-8 pr-8 h-8 bg-muted/40 border-transparent focus:bg-background focus:ring-1 focus:ring-primary/20 transition-all text-xs"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
@@ -575,7 +599,7 @@ function App() {
               onClick={toggleFocusMode}
               title={isFocusMode ? "標準モード" : "集中モード"}
             >
-              {isFocusMode ? <Maximize className="h-3.5 w-3.5" /> : <Shrink className="h-3.5 w-3.5" />}
+              {isFocusMode ? <Shrink className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
             </Button>
 
             {!isFocusMode && (

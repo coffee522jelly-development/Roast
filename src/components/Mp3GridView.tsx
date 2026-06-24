@@ -2,7 +2,7 @@ import { Mp3Metadata } from "../App";
 import { invoke } from "@tauri-apps/api/core";
 import { useState, useEffect } from "react";
 import { cn } from "../lib/utils";
-import { Music2, Play } from "lucide-react";
+import { Music2, Play, Search } from "lucide-react";
 
 interface Mp3GridViewProps {
   files: Mp3Metadata[];
@@ -24,8 +24,14 @@ export function Mp3GridView({ files, onSelect, onDoubleClick, selectedPath }: Mp
         />
       ))}
       {files.length === 0 && (
-        <div className="col-span-full flex flex-col items-center justify-center h-40 text-muted-foreground text-sm">
-          <p>表示するファイルがありません</p>
+        <div className="col-span-full flex flex-col items-center justify-center h-[400px] text-muted-foreground gap-4">
+          <div className="p-6 rounded-full bg-muted/30">
+            <Search className="h-8 w-8 opacity-20" />
+          </div>
+          <div className="text-center">
+            <p className="text-xs font-medium">該当するファイルが見つかりません</p>
+            <p className="text-[10px] mt-1 opacity-60">検索ワードを変えるか、表示条件を確認してください。</p>
+          </div>
         </div>
       )}
     </div>
