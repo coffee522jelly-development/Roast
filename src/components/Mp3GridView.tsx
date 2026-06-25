@@ -88,6 +88,13 @@ function GridItem({ file, onSelect, onDoubleClick, isSelected }: {
           <Music2 className="h-12 w-12 text-muted-foreground/20" />
         )}
 
+        {/* HQ Badge */}
+        {(file.bitrate || 0) >= 320 && (
+          <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded-sm bg-black/60 backdrop-blur-md text-white text-[8px] font-bold border border-white/20 shadow-xl">
+            HQ
+          </div>
+        )}
+
         {/* Overlay Play Hint */}
         <div className={cn(
           "absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100",

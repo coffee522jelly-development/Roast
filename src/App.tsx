@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
+import { cn } from "./lib/utils";
 import { Mp3Table } from "./components/Mp3Table";
 import { Mp3GridView } from "./components/Mp3GridView";
 import { WaveformDisplay } from "./components/WaveformDisplay";
@@ -24,7 +25,10 @@ import {
   List,
   RotateCw,
   Maximize,
-  Shrink
+  Shrink,
+  Coffee,
+  CheckCircle2,
+  Library
 } from "lucide-react";
 import "./App.css";
 
@@ -421,6 +425,21 @@ function App() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const getRoastStatus = (file: Mp3Metadata | null) => {
+    if (!file) return null;
+    let score = 0;
+    if (file.title) score += 25;
+    if (file.artist) score += 25;
+    if (file.album) score += 15;
+    if (file.year) score += 10;
+    if ((file.bitrate || 0) >= 320) score += 25;
+
+    if (score >= 100) return { label: "Perfectly Roasted", color: "text-amber-500", icon: <Flame className="h-3 w-3" /> };
+    if (score >= 75) return { label: "Well Done", color: "text-amber-600/80", icon: <Coffee className="h-3 w-3" /> };
+    if (score >= 50) return { label: "Medium", color: "text-muted-foreground", icon: <CheckCircle2 className="h-3 w-3" /> };
+    return { label: "Lightly Roasted", color: "text-muted-foreground/40", icon: null };
+  };
+
   const setA = () => {
     setAPoint(currentTime);
     if (bPoint !== null && currentTime >= bPoint) setBPoint(null);
@@ -516,8 +535,29 @@ function App() {
     }
   }, [mp3Files]);
 
+  const libraryStats = useMemo(() => {
+    const totalSize = mp3Files.reduce((acc, f) => acc + f.size, 0);
+    const gb = totalSize / (1024 * 1024 * 1024);
+    return {
+      count: mp3Files.length,
+      size: gb >= 1 ? `${gb.toFixed(2)} GB` : `${(totalSize / (1024 * 1024)).toFixed(1)} MB`
+    };
+  }, [mp3Files]);
+
   return (
-    <div className="h-screen bg-background text-foreground overflow-hidden font-sans flex flex-col selection:bg-primary selection:text-primary-foreground">
+    <div className="relative h-screen bg-background text-foreground overflow-hidden font-sans flex flex-col selection:bg-primary selection:text-primary-foreground transition-colors duration-500">
+      {/* Dynamic Background */}
+      {selectedArtwork && (
+        <div
+          className="absolute inset-0 z-0 pointer-events-none transition-all duration-1000 ease-in-out opacity-20 scale-110 blur-[100px]"
+          style={{
+            backgroundImage: `url(${selectedArtwork})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+      )}
+
       {/* Audio Element */}
       <audio
         ref={audioRef}
@@ -559,9 +599,17 @@ function App() {
             </Button>
           </div>
           {settings.defaultFolder && !isFocusMode && (
-            <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono opacity-60">
-              {settings.defaultFolder}
-            </span>
+            <div className="flex items-center gap-3 border-l pl-6 ml-2 h-6 border-muted/30">
+               <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground opacity-70">
+                  <Library className="h-3 w-3" />
+                  <span>{libraryStats.count} 曲</span>
+                  <span className="mx-1 opacity-30">/</span>
+                  <span>{libraryStats.size}</span>
+               </div>
+               <span className="text-[9px] text-muted-foreground truncate max-w-[150px] font-mono opacity-40 italic">
+                 {settings.defaultFolder}
+               </span>
+            </div>
           )}
         </div>
 
@@ -639,7 +687,7 @@ function App() {
         </div>
       </header>
 
-      <main className="flex flex-1 overflow-hidden">
+      <main className="flex flex-1 overflow-hidden z-10">
         {/* Main Area */}
         <div className="flex-1 overflow-hidden p-4">
           {isFocusMode ? (
@@ -683,8 +731,12 @@ function App() {
 
         {/* Sidebar (Detail View) */}
         {isSidebarOpen && !isFocusMode && (
-          <aside className="w-80 h-full border-l bg-muted/10 overflow-hidden transition-all duration-300">
-            <DetailView file={selectedFile} artwork={selectedArtwork} />
+          <aside className="w-80 h-full border-l bg-muted/10 backdrop-blur-sm overflow-hidden transition-all duration-300">
+            <DetailView
+              file={selectedFile}
+              artwork={selectedArtwork}
+              status={getRoastStatus(selectedFile)}
+            />
           </aside>
         )}
       </main>
@@ -786,9 +838,16 @@ function App() {
              )}
 
              <div className="flex flex-col min-w-0 ml-2 overflow-hidden">
-                <span className="text-xs font-bold truncate leading-none mb-1 whitespace-nowrap">
-                  {selectedFile ? (selectedFile.title || selectedFile.filename) : "曲が選択されていません"}
-                </span>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-bold truncate leading-none whitespace-nowrap">
+                    {selectedFile ? (selectedFile.title || selectedFile.filename) : "曲が選択されていません"}
+                  </span>
+                  {selectedFile && (
+                    <div className={cn("shrink-0", getRoastStatus(selectedFile)?.color)}>
+                      {getRoastStatus(selectedFile)?.icon}
+                    </div>
+                  )}
+                </div>
                 <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate opacity-60 whitespace-nowrap">
                   {selectedFile?.artist || "—"}
                 </span>

@@ -1,4 +1,5 @@
 import { Mp3Metadata } from "../App";
+import { cn } from "../lib/utils";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Music2, Copy, Check } from "lucide-react";
@@ -7,9 +8,10 @@ import { useState } from "react";
 interface DetailViewProps {
   file: Mp3Metadata | null;
   artwork: string | null;
+  status: { label: string; color: string; icon: React.ReactNode } | null;
 }
 
-export function DetailView({ file, artwork }: DetailViewProps) {
+export function DetailView({ file, artwork, status }: DetailViewProps) {
   const [copied, setCopied] = useState(false);
 
   const copyFilename = async () => {
@@ -47,8 +49,17 @@ export function DetailView({ file, artwork }: DetailViewProps) {
   };
 
   return (
-    <div className="p-4 flex flex-col gap-6 overflow-y-auto h-full">
-      <Card className="aspect-square w-full overflow-hidden flex items-center justify-center bg-muted border-none shadow-sm">
+    <div className="p-4 flex flex-col gap-6 overflow-y-auto h-full relative z-10">
+      <div className="space-y-4">
+        {status && (
+          <div className={cn("flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/50 border backdrop-blur-md shadow-sm w-fit", status.color)}>
+            {status.icon}
+            <span className="text-[10px] font-black uppercase tracking-widest">{status.label}</span>
+          </div>
+        )}
+      </div>
+
+      <Card className="aspect-square w-full overflow-hidden flex items-center justify-center bg-muted border-none shadow-[0_10px_30px_rgba(0,0,0,0.15)] ring-1 ring-black/5">
         {artwork ? (
           <img
             src={artwork}

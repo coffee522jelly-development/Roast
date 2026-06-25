@@ -152,7 +152,12 @@ export function Mp3Table({
                   {file.artist || "-"}
                 </td>
                 <td className="p-4 align-middle font-mono text-[10px] text-muted-foreground">
-                  {file.bitrate ? `${file.bitrate}kbps` : "-"}
+                  <div className="flex items-center gap-2">
+                    {file.bitrate ? `${file.bitrate}kbps` : "-"}
+                    {(file.bitrate || 0) >= 320 && (
+                      <span className="px-1 py-0.5 rounded-sm bg-primary/10 text-primary text-[8px] font-bold border border-primary/20 leading-none">HQ</span>
+                    )}
+                  </div>
                 </td>
                 <td className="p-4 align-middle font-mono text-[10px] text-muted-foreground">
                   {formatDuration(file.duration)}
