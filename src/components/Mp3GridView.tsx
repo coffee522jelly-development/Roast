@@ -2,7 +2,14 @@ import { Mp3Metadata } from "../App";
 import { invoke } from "@tauri-apps/api/core";
 import { useState, useEffect } from "react";
 import { cn } from "../lib/utils";
-import { Music2, Play, Search } from "lucide-react";
+import {
+  Music2,
+  Play,
+  Search,
+  SignalLow,
+  SignalMedium,
+  Signal
+} from "lucide-react";
 
 interface Mp3GridViewProps {
   files: Mp3Metadata[];
@@ -88,10 +95,16 @@ function GridItem({ file, onSelect, onDoubleClick, isSelected }: {
           <Music2 className="h-12 w-12 text-muted-foreground/20" />
         )}
 
-        {/* HQ Badge */}
-        {(file.bitrate || 0) >= 320 && (
-          <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded-sm bg-black/60 backdrop-blur-md text-white text-[8px] font-bold border border-white/20 shadow-xl">
-            HQ
+        {/* Quality Indicator */}
+        {file.bitrate && (
+          <div className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/5 shadow-xl">
+            {file.bitrate >= 320 ? (
+              <Signal className="h-2.5 w-2.5 text-white opacity-80" />
+            ) : file.bitrate >= 192 ? (
+              <SignalMedium className="h-2.5 w-2.5 text-white/60" />
+            ) : (
+              <SignalLow className="h-2.5 w-2.5 text-white/30" />
+            )}
           </div>
         )}
 

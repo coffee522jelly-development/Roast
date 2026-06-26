@@ -12,7 +12,10 @@ import {
   ChevronDown,
   Play,
   Trash2,
-  Search
+  Search,
+  SignalLow,
+  SignalMedium,
+  Signal
 } from "lucide-react";
 import { useState } from "react";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
@@ -72,6 +75,13 @@ export function Mp3Table({
   const renderSortIcon = (field: "filename" | "artist" | "quality") => {
     if (sortField !== field) return null;
     return sortOrder === "asc" ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />;
+  };
+
+  const renderQualityIcon = (bitrate: number | null) => {
+    if (!bitrate) return null;
+    if (bitrate >= 320) return <Signal className="h-3 w-3 text-primary opacity-60" title="High Quality" />;
+    if (bitrate >= 192) return <SignalMedium className="h-3 w-3 text-muted-foreground opacity-60" title="Medium Quality" />;
+    return <SignalLow className="h-3 w-3 text-muted-foreground/40" title="Low Quality" />;
   };
 
   return (
@@ -152,11 +162,9 @@ export function Mp3Table({
                   {file.artist || "-"}
                 </td>
                 <td className="p-4 align-middle font-mono text-[10px] text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    {file.bitrate ? `${file.bitrate}kbps` : "-"}
-                    {(file.bitrate || 0) >= 320 && (
-                      <span className="px-1 py-0.5 rounded-sm bg-primary/10 text-primary text-[8px] font-bold border border-primary/20 leading-none">HQ</span>
-                    )}
+                  <div className="flex items-center gap-3">
+                    {renderQualityIcon(file.bitrate)}
+                    <span>{file.bitrate ? `${file.bitrate}kbps` : "-"}</span>
                   </div>
                 </td>
                 <td className="p-4 align-middle font-mono text-[10px] text-muted-foreground">
