@@ -7,7 +7,6 @@
     "core:default",
     "core:window:allow-set-size",
     "core:window:allow-set-position",
-    "core:window:allow-get-window",
     "core:window:allow-center",
     "allow-main-commands",
     "opener:default",
