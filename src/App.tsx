@@ -576,7 +576,7 @@ function App() {
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
              <Flame className="h-5 w-5 text-primary fill-primary/10" />
-             <h1 className="text-sm font-bold tracking-[0.2em] uppercase">Roast</h1>
+             <h1 className="text-sm font-bold tracking-[0.2em]">Roast</h1>
           </div>
           <div className="flex items-center gap-1 border rounded-md p-1 bg-muted/20">
             <Button
