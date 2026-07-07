@@ -54,3 +54,8 @@ npm run tauri dev
 
 ---
 Roastで、あなたの音楽コレクションを最高の状態に。
+
+## トラブルシューティング
+
+- **ビルドエラーについて**: 開発時に `lucide-react` のアイコンコンポーネントに `title` プロパティを直接渡すと TypeScript エラー (TS2322) が発生します。これを回避するためには、アイコンを `<span title="...">` で囲むように実装してください。
+- **Tauri ビルドの失敗**: Linux で `npm run tauri build` を実行する際、システム依存パッケージ（`libglib2.0-dev`, `libwebkit2gtk-4.1-dev`, `libsoup-3.0-dev` 等）が必要です。また Tauri v2 の設定ファイル (capabilities) で古い権限（`core:window:allow-get-window` など）が指定されていると、ログ出力なしでビルドに失敗することがあるので注意してください。
