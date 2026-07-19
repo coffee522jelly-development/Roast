@@ -3,6 +3,25 @@
 version = 4
 
 [[package]]
+name = "Roast"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "id3",
+ "mp3-duration",
+ "mp3-metadata",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-opener",
+ "tempfile",
+ "walkdir",
+]
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2800,25 +2819,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "windows-sys 0.60.2",
-]
-
-[[package]]
-name = "roast"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "id3",
- "mp3-duration",
- "mp3-metadata",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-opener",
- "tempfile",
- "walkdir",
 ]
 
 [[package]]
