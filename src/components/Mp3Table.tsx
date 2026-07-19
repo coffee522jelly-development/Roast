@@ -79,9 +79,9 @@ export function Mp3Table({
 
   const renderQualityIcon = (bitrate: number | null) => {
     if (!bitrate) return null;
-    if (bitrate >= 320) return <Signal className="h-3 w-3 text-primary opacity-60" title="High Quality" />;
-    if (bitrate >= 192) return <SignalMedium className="h-3 w-3 text-muted-foreground opacity-60" title="Medium Quality" />;
-    return <SignalLow className="h-3 w-3 text-muted-foreground/40" title="Low Quality" />;
+    if (bitrate >= 320) return <span title="High Quality"><Signal className="h-3 w-3 text-primary opacity-60" /></span>;
+    if (bitrate >= 192) return <span title="Medium Quality"><SignalMedium className="h-3 w-3 text-muted-foreground opacity-60" /></span>;
+    return <span title="Low Quality"><SignalLow className="h-3 w-3 text-muted-foreground/40" /></span>;
   };
 
   return (
