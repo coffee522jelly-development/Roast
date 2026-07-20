@@ -5,6 +5,16 @@ interface VisualizerProps {
   theme: string;
 }
 
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+}
+
 export function Visualizer({ analyserNode, theme }: VisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -16,6 +26,7 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
     if (!ctx) return;
 
     let animationId: number;
+    let particles: Particle[] = [];
 
     const bufferLength = analyserNode.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -31,6 +42,7 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
 
       analyserNode.getByteFrequencyData(dataArray);
 
+      // Darken the background slightly each frame to create trails instead of clearRect
       ctx.clearRect(0, 0, width, height);
 
       const rawPrimary = getComputedStyle(document.body).getPropertyValue('--primary').trim();
@@ -42,11 +54,13 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
       // Calculate coordinates for the wave
       const wavePoints: { x: number, y: number }[] = [];
       const lines: { startX: number, startY: number, endX: number, endY: number, value: number }[] = [];
+      let totalEnergy = 0;
 
       // Map low freq -> right (0 angle), high freq -> left (PI angle)
       // Top half: 0 to -PI
       for (let i = 0; i < activeFrequencies; i++) {
         const value = dataArray[i];
+        totalEnergy += value;
         const normalizedValue = value / 255;
         const barHeight = normalizedValue * (Math.min(width, height) / 2.5 - baseRadius);
 
@@ -69,6 +83,7 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
       // Bottom half: mirror the top half (0 to PI)
       for (let i = activeFrequencies - 1; i >= 0; i--) {
         const value = dataArray[i];
+        totalEnergy += value;
         const normalizedValue = value / 255;
         const barHeight = normalizedValue * (Math.min(width, height) / 2.5 - baseRadius);
 
@@ -86,6 +101,45 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
         const endY = centerY + Math.sin(angle) * (baseRadius + barHeight);
 
         lines.push({ startX, startY, endX, endY, value });
+      }
+
+      const avgEnergy = totalEnergy / (activeFrequencies * 2);
+
+      // Spawn particles based on energy
+      if (avgEnergy > 20 && Math.random() > 0.5) {
+        const numParticles = Math.floor(avgEnergy / 10);
+        for (let i = 0; i < numParticles; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 1 + Math.random() * (avgEnergy / 20);
+          particles.push({
+            x: centerX + Math.cos(angle) * baseRadius,
+            y: centerY + Math.sin(angle) * baseRadius,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 0,
+            maxLife: 50 + Math.random() * 100,
+            size: 1 + Math.random() * 3
+          });
+        }
+      }
+
+      // Update and Draw Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life++;
+
+        if (p.life >= p.maxLife) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        const opacity = 1 - (p.life / p.maxLife);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = rawPrimary ? `hsla(${formattedValues}, ${opacity})` : `rgba(59, 130, 246, ${opacity})`;
+        ctx.fill();
       }
 
       // Draw Radiating Lines
@@ -122,35 +176,16 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
         }
         ctx.closePath();
 
-        const waveGrad = ctx.createRadialGradient(centerX, centerY, baseRadius, centerX, centerY, width/2);
-        if (rawPrimary) {
-           waveGrad.addColorStop(0, `hsla(${formattedValues}, 0.8)`);
-           waveGrad.addColorStop(0.2, `hsla(${formattedValues}, 0.3)`);
-           waveGrad.addColorStop(1, `hsla(${formattedValues}, 0)`);
-        } else {
-           waveGrad.addColorStop(0, `rgba(59, 130, 246, 0.8)`);
-           waveGrad.addColorStop(0.2, `rgba(59, 130, 246, 0.3)`);
-           waveGrad.addColorStop(1, `rgba(59, 130, 246, 0)`);
-        }
-
         ctx.lineWidth = 2;
         ctx.strokeStyle = rawPrimary ? `hsla(${formattedValues}, 0.9)` : 'rgba(59, 130, 246, 0.9)';
         ctx.stroke();
-
-        // Fill wave with gradient
-        ctx.fillStyle = waveGrad;
-        ctx.fill();
       }
 
-      // Draw inner glowing circle
+      // Draw inner hollow ring
       ctx.beginPath();
       ctx.arc(centerX, centerY, baseRadius, 0, Math.PI * 2);
-      ctx.fillStyle = rawPrimary ? `hsla(${formattedValues}, 0.1)` : 'rgba(59, 130, 246, 0.1)';
-      ctx.fill();
-
-      // Stroke the inner circle slightly
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = rawPrimary ? `hsla(${formattedValues}, 0.5)` : 'rgba(59, 130, 246, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = rawPrimary ? `hsla(${formattedValues}, 0.8)` : 'rgba(59, 130, 246, 0.8)';
       ctx.stroke();
     };
 
