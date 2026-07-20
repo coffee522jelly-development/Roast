@@ -8,6 +8,7 @@ import { WaveformDisplay } from "./components/WaveformDisplay";
 import { EditModal } from "./components/EditModal";
 import { DetailView } from "./components/DetailView";
 import { SettingsModal } from "./components/SettingsModal";
+import { Visualizer } from "./components/Visualizer";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { Slider } from "./components/ui/slider";
@@ -23,6 +24,7 @@ import {
   Flame,
   LayoutGrid,
   List,
+  Activity,
   RotateCw,
   Maximize,
   Shrink,
@@ -65,7 +67,7 @@ function App() {
     }
   });
   const [showSettings, setShowSettings] = useState(false);
-  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+  const [viewMode, setViewMode] = useState<"table" | "grid" | "visualizer">("table");
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [sortField, setSortField] = useState<"filename" | "artist" | "quality">("filename");
@@ -93,6 +95,7 @@ function App() {
 
   // Web Audio API refs
   const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserNodeRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
   const lpfNodeRef = useRef<BiquadFilterNode | null>(null);
   const hpfNodeRef = useRef<BiquadFilterNode | null>(null);
@@ -107,6 +110,10 @@ function App() {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       audioContextRef.current = audioContext;
 
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyserNodeRef.current = analyser;
+
       const lpf = audioContext.createBiquadFilter();
       lpf.type = "lowpass";
       lpf.frequency.value = 20000;
@@ -120,8 +127,9 @@ function App() {
       const source = audioContext.createMediaElementSource(audioRef.current);
       sourceNodeRef.current = source;
 
-      // Connect: source -> LPF -> HPF -> destination
-      source.connect(lpf);
+      // Connect: source -> Analyser -> LPF -> HPF -> destination
+      source.connect(analyser);
+      analyser.connect(lpf);
       lpf.connect(hpf);
       hpf.connect(audioContext.destination);
     }
@@ -670,6 +678,15 @@ function App() {
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
                 </Button>
+                <Button
+                  variant={viewMode === "visualizer" ? "secondary" : "ghost"}
+                  size="xs"
+                  className="h-7 w-7 p-0"
+                  onClick={() => setViewMode("visualizer")}
+                  title="ビジュアライザー表示"
+                >
+                  <Activity className="h-3.5 w-3.5" />
+                </Button>
               </>
             )}
           </div>
@@ -719,14 +736,16 @@ function App() {
               sortField={sortField}
               sortOrder={sortOrder}
             />
-          ) : (
+          ) : viewMode === "grid" ? (
             <Mp3GridView
               files={filteredFiles}
               onSelect={selectFile}
               onDoubleClick={playFile}
               selectedPath={selectedFile?.path || null}
             />
-          )}
+          ) : viewMode === "visualizer" ? (
+            <Visualizer analyserNode={analyserNodeRef.current} theme={settings.theme} />
+          ) : null}
         </div>
 
         {/* Sidebar (Detail View) */}
