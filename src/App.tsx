@@ -659,36 +659,35 @@ function App() {
             </Button>
 
             {!isFocusMode && (
-              <>
-                <Button
-                  variant={viewMode === "table" ? "secondary" : "ghost"}
-                  size="xs"
-                  className="h-7 w-7 p-0"
-                  onClick={() => setViewMode("table")}
-                  title="リスト表示"
-                >
-                  <List className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant={viewMode === "grid" ? "secondary" : "ghost"}
-                  size="xs"
-                  className="h-7 w-7 p-0"
-                  onClick={() => setViewMode("grid")}
-                  title="アルバムアート表示"
-                >
-                  <LayoutGrid className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant={viewMode === "visualizer" ? "secondary" : "ghost"}
-                  size="xs"
-                  className="h-7 w-7 p-0"
-                  onClick={() => setViewMode("visualizer")}
-                  title="ビジュアライザー表示"
-                >
-                  <Activity className="h-3.5 w-3.5" />
-                </Button>
-              </>
+              <Button
+                variant={viewMode === "table" ? "secondary" : "ghost"}
+                size="xs"
+                className="h-7 w-7 p-0"
+                onClick={() => setViewMode("table")}
+                title="リスト表示"
+              >
+                <List className="h-3.5 w-3.5" />
+              </Button>
             )}
+
+            <Button
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="xs"
+              className="h-7 w-7 p-0"
+              onClick={() => setViewMode("grid")}
+              title="アルバムアート表示"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "visualizer" ? "secondary" : "ghost"}
+              size="xs"
+              className="h-7 w-7 p-0"
+              onClick={() => setViewMode("visualizer")}
+              title="ビジュアライザー表示"
+            >
+              <Activity className="h-3.5 w-3.5" />
+            </Button>
           </div>
 
           {!isFocusMode && (
@@ -707,7 +706,7 @@ function App() {
       <main className="flex flex-1 overflow-hidden z-10">
         {/* Main Area */}
         <div className="flex-1 overflow-hidden p-4">
-          {isFocusMode ? (
+          {isFocusMode && viewMode !== "visualizer" ? (
             <div className="h-full flex flex-col items-center justify-center gap-10 animate-in fade-in zoom-in duration-500 max-w-full px-4">
               <div className="relative aspect-square w-full max-w-[420px] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-muted ring-1 ring-primary/10">
                 {selectedArtwork ? (
