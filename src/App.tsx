@@ -137,13 +137,13 @@ function App() {
 
   // Update filter parameters
   useEffect(() => {
-    if (lpfNodeRef.current && hpfNodeRef.current) {
+    if (lpfNodeRef.current && hpfNodeRef.current && audioContextRef.current) {
       if (isFilterEnabled) {
-        lpfNodeRef.current.frequency.setTargetAtTime(lpfFreq, audioContextRef.current!.currentTime, 0.05);
-        hpfNodeRef.current.frequency.setTargetAtTime(hpfFreq, audioContextRef.current!.currentTime, 0.05);
+        lpfNodeRef.current.frequency.setTargetAtTime(lpfFreq, audioContextRef.current.currentTime, 0.05);
+        hpfNodeRef.current.frequency.setTargetAtTime(hpfFreq, audioContextRef.current.currentTime, 0.05);
       } else {
-        lpfNodeRef.current.frequency.setTargetAtTime(20000, audioContextRef.current!.currentTime, 0.05);
-        hpfNodeRef.current.frequency.setTargetAtTime(20, audioContextRef.current!.currentTime, 0.05);
+        lpfNodeRef.current.frequency.setTargetAtTime(20000, audioContextRef.current.currentTime, 0.05);
+        hpfNodeRef.current.frequency.setTargetAtTime(20, audioContextRef.current.currentTime, 0.05);
       }
     }
   }, [lpfFreq, hpfFreq, isFilterEnabled]);
