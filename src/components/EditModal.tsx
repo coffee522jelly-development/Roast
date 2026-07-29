@@ -43,7 +43,7 @@ export function EditModal({ file, onSave, onCancel, onChange }: EditModalProps) 
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="filename" className="text-right font-bold">ファイル名</Label>
+            <Label htmlFor="filename" className="text-right font-bold whitespace-nowrap">ファイル名</Label>
             <div className="col-span-3 flex flex-col gap-1">
               <Input
                 id="filename"
@@ -55,7 +55,7 @@ export function EditModal({ file, onSave, onCancel, onChange }: EditModalProps) 
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">タイトル</Label>
+            <Label htmlFor="title" className="text-right whitespace-nowrap">タイトル</Label>
             <Input
               id="title"
               value={file.title || ""}
@@ -64,7 +64,7 @@ export function EditModal({ file, onSave, onCancel, onChange }: EditModalProps) 
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="artist" className="text-right">アーティスト</Label>
+            <Label htmlFor="artist" className="text-right whitespace-nowrap">アーティスト</Label>
             <div className="col-span-3 flex gap-1">
               <Input
                 id="artist"
@@ -93,7 +93,7 @@ export function EditModal({ file, onSave, onCancel, onChange }: EditModalProps) 
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="album" className="text-right">アルバム</Label>
+            <Label htmlFor="album" className="text-right whitespace-nowrap">アルバム</Label>
             <div className="col-span-3 flex gap-1">
               <Input
                 id="album"
@@ -122,7 +122,7 @@ export function EditModal({ file, onSave, onCancel, onChange }: EditModalProps) 
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="year" className="text-right">リリース年</Label>
+            <Label htmlFor="year" className="text-right whitespace-nowrap">リリース年</Label>
             <Input
               id="year"
               type="number"

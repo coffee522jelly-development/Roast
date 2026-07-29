@@ -949,6 +949,19 @@ function App() {
           onChange={(file) => setEditingFile(file)}
         />
       )}
+      <button id="test-trigger-edit" className="hidden" onClick={() => setEditingFile({
+        path: "/fake/path.mp3",
+        filename: "test_file.mp3",
+        title: "Test Title",
+        artist: "Test Artist",
+        album: "Test Album",
+        year: 2024,
+        duration: 120,
+        size: 1000,
+        is_locked: false,
+        bitrate: 320,
+        sample_rate: 44100
+      })}>Test</button>
 
       {showSettings && (
         <SettingsModal
