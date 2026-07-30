@@ -3,5 +3,5 @@
 
 fn main() {
     println!("ROAST: STARTING MAIN");
-    Roast_lib::run()
+    roast_lib::run()
 }

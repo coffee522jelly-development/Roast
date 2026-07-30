@@ -99,7 +99,7 @@ export function Mp3Table({
                   {renderSortIcon("filename")}
                 </div>
               </th>
-              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">タイトル</th>
+              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground whitespace-nowrap">タイトル</th>
               <th
                 className="h-10 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
                 onClick={() => onSort("artist")}
@@ -118,7 +118,7 @@ export function Mp3Table({
                   {renderSortIcon("quality")}
                 </div>
               </th>
-              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">
+              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground whitespace-nowrap">
                 <Clock className="h-3 w-3 inline mr-1" />
                 長さ
               </th>
@@ -220,7 +220,7 @@ export function Mp3Table({
                         <Button
                           variant="outline"
                           size="xs"
-                          className="h-6 text-[10px] gap-1"
+                          className="h-6 text-[10px] gap-1 whitespace-nowrap"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <FolderTree className="h-3 w-3" />
