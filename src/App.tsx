@@ -103,6 +103,7 @@ function App() {
   const [lpfFreq, setLpfFreq] = useState(20000);
   const [hpfFreq, setHpfFreq] = useState(20);
   const [isFilterEnabled, setIsFilterEnabled] = useState(false);
+  const [isAudioReady, setIsAudioReady] = useState(false);
 
   // Initialize Web Audio API
   useEffect(() => {
@@ -132,12 +133,13 @@ function App() {
       analyser.connect(lpf);
       lpf.connect(hpf);
       hpf.connect(audioContext.destination);
+      setIsAudioReady(true);
     }
   }, []);
 
   // Update filter parameters
   useEffect(() => {
-    if (lpfNodeRef.current && hpfNodeRef.current && audioContextRef.current) {
+    if (lpfNodeRef.current && hpfNodeRef.current && audioContextRef.current && isAudioReady) {
       if (isFilterEnabled) {
         lpfNodeRef.current.frequency.setTargetAtTime(lpfFreq, audioContextRef.current.currentTime, 0.05);
         hpfNodeRef.current.frequency.setTargetAtTime(hpfFreq, audioContextRef.current.currentTime, 0.05);
@@ -146,7 +148,7 @@ function App() {
         hpfNodeRef.current.frequency.setTargetAtTime(20, audioContextRef.current.currentTime, 0.05);
       }
     }
-  }, [lpfFreq, hpfFreq, isFilterEnabled]);
+  }, [lpfFreq, hpfFreq, isFilterEnabled, isAudioReady]);
 
   // Apply theme and bg mode
   useEffect(() => {
