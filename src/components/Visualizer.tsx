@@ -38,7 +38,7 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
       const height = canvas.height;
       const centerX = width / 2;
       const centerY = height / 2;
-      const baseRadius = Math.min(width, height) * 0.15;
+      const baseRadius = Math.min(width, height) * 0.20;
 
       analyserNode.getByteFrequencyData(dataArray);
 
@@ -62,12 +62,12 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
         const value = dataArray[i];
         totalEnergy += value;
         const normalizedValue = value / 255;
-        const barHeight = normalizedValue * (Math.min(width, height) / 2.5 - baseRadius);
+        const barHeight = normalizedValue * (Math.min(width, height) / 1.8 - baseRadius);
 
         // Map i=0 to angle=0 (right), i=activeFrequencies to angle=-PI (left)
         const angle = - (i / (activeFrequencies - 1)) * Math.PI;
 
-        const currentRadius = baseRadius + (normalizedValue * 30); // Wave pulse radius
+        const currentRadius = baseRadius + (normalizedValue * 60); // Wave pulse radius
         const waveX = centerX + Math.cos(angle) * currentRadius;
         const waveY = centerY + Math.sin(angle) * currentRadius;
         wavePoints.push({ x: waveX, y: waveY });
@@ -85,12 +85,12 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
         const value = dataArray[i];
         totalEnergy += value;
         const normalizedValue = value / 255;
-        const barHeight = normalizedValue * (Math.min(width, height) / 2.5 - baseRadius);
+        const barHeight = normalizedValue * (Math.min(width, height) / 1.8 - baseRadius);
 
         // Map i=activeFrequencies to angle=PI (left), i=0 to angle=0 (right)
         const angle = (i / (activeFrequencies - 1)) * Math.PI;
 
-        const currentRadius = baseRadius + (normalizedValue * 30); // Wave pulse radius
+        const currentRadius = baseRadius + (normalizedValue * 60); // Wave pulse radius
         const waveX = centerX + Math.cos(angle) * currentRadius;
         const waveY = centerY + Math.sin(angle) * currentRadius;
         wavePoints.push({ x: waveX, y: waveY });
@@ -110,7 +110,7 @@ export function Visualizer({ analyserNode, theme }: VisualizerProps) {
         const numParticles = Math.floor(avgEnergy / 10);
         for (let i = 0; i < numParticles; i++) {
           const angle = Math.random() * Math.PI * 2;
-          const speed = 1 + Math.random() * (avgEnergy / 20);
+          const speed = 2 + Math.random() * (avgEnergy / 10);
           particles.push({
             x: centerX + Math.cos(angle) * baseRadius,
             y: centerY + Math.sin(angle) * baseRadius,

@@ -103,6 +103,7 @@ function App() {
   const [lpfFreq, setLpfFreq] = useState(20000);
   const [hpfFreq, setHpfFreq] = useState(20);
   const [isFilterEnabled, setIsFilterEnabled] = useState(false);
+  const [isAudioReady, setIsAudioReady] = useState(false);
 
   // Initialize Web Audio API
   useEffect(() => {
@@ -132,21 +133,22 @@ function App() {
       analyser.connect(lpf);
       lpf.connect(hpf);
       hpf.connect(audioContext.destination);
+      setIsAudioReady(true);
     }
   }, []);
 
   // Update filter parameters
   useEffect(() => {
-    if (lpfNodeRef.current && hpfNodeRef.current) {
+    if (lpfNodeRef.current && hpfNodeRef.current && audioContextRef.current && isAudioReady) {
       if (isFilterEnabled) {
-        lpfNodeRef.current.frequency.setTargetAtTime(lpfFreq, audioContextRef.current!.currentTime, 0.05);
-        hpfNodeRef.current.frequency.setTargetAtTime(hpfFreq, audioContextRef.current!.currentTime, 0.05);
+        lpfNodeRef.current.frequency.setTargetAtTime(lpfFreq, audioContextRef.current.currentTime, 0.05);
+        hpfNodeRef.current.frequency.setTargetAtTime(hpfFreq, audioContextRef.current.currentTime, 0.05);
       } else {
-        lpfNodeRef.current.frequency.setTargetAtTime(20000, audioContextRef.current!.currentTime, 0.05);
-        hpfNodeRef.current.frequency.setTargetAtTime(20, audioContextRef.current!.currentTime, 0.05);
+        lpfNodeRef.current.frequency.setTargetAtTime(20000, audioContextRef.current.currentTime, 0.05);
+        hpfNodeRef.current.frequency.setTargetAtTime(20, audioContextRef.current.currentTime, 0.05);
       }
     }
-  }, [lpfFreq, hpfFreq, isFilterEnabled]);
+  }, [lpfFreq, hpfFreq, isFilterEnabled, isAudioReady]);
 
   // Apply theme and bg mode
   useEffect(() => {
@@ -582,33 +584,9 @@ function App() {
       {/* Header */}
       <header className="h-14 border-b flex items-center justify-between px-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-             <Flame className="h-5 w-5 text-primary fill-primary/10" />
-             <h1 className="text-sm font-bold tracking-[0.2em] uppercase">Roast</h1>
-          </div>
-          <div className="flex items-center gap-1 border rounded-md p-1 bg-muted/20">
-            <Button
-              variant="ghost"
-              size="xs"
-              className="h-8 w-8 p-0"
-              onClick={() => setShowSettings(true)}
-              title="設定"
-            >
-              <SettingsIcon className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="xs"
-              className="h-8 w-8 p-0"
-              onClick={() => settings.defaultFolder && loadMp3Files(settings.defaultFolder)}
-              title="ライブラリを更新"
-            >
-              <RotateCw className="h-3.5 w-3.5" />
-            </Button>
-          </div>
           {settings.defaultFolder && !isFocusMode && (
-            <div className="flex items-center gap-3 border-l pl-6 ml-2 h-6 border-muted/30">
-               <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground opacity-70">
+            <div className="flex items-center gap-3 h-6">
+               <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground opacity-70 whitespace-nowrap">
                   <Library className="h-3 w-3" />
                   <span>{libraryStats.count} 曲</span>
                   <span className="mx-1 opacity-30">/</span>
@@ -643,7 +621,7 @@ function App() {
 
         <div className="flex items-center gap-4">
           {status && (
-            <div className="px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
+            <div className="px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10 whitespace-nowrap">
                <span className="text-[9px] font-bold uppercase tracking-tighter text-primary">{status}</span>
             </div>
           )}
@@ -659,36 +637,35 @@ function App() {
             </Button>
 
             {!isFocusMode && (
-              <>
-                <Button
-                  variant={viewMode === "table" ? "secondary" : "ghost"}
-                  size="xs"
-                  className="h-7 w-7 p-0"
-                  onClick={() => setViewMode("table")}
-                  title="リスト表示"
-                >
-                  <List className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant={viewMode === "grid" ? "secondary" : "ghost"}
-                  size="xs"
-                  className="h-7 w-7 p-0"
-                  onClick={() => setViewMode("grid")}
-                  title="アルバムアート表示"
-                >
-                  <LayoutGrid className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant={viewMode === "visualizer" ? "secondary" : "ghost"}
-                  size="xs"
-                  className="h-7 w-7 p-0"
-                  onClick={() => setViewMode("visualizer")}
-                  title="ビジュアライザー表示"
-                >
-                  <Activity className="h-3.5 w-3.5" />
-                </Button>
-              </>
+              <Button
+                variant={viewMode === "table" ? "secondary" : "ghost"}
+                size="xs"
+                className="h-7 w-7 p-0"
+                onClick={() => setViewMode("table")}
+                title="リスト表示"
+              >
+                <List className="h-3.5 w-3.5" />
+              </Button>
             )}
+
+            <Button
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="xs"
+              className="h-7 w-7 p-0"
+              onClick={() => setViewMode("grid")}
+              title="アルバムアート表示"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "visualizer" ? "secondary" : "ghost"}
+              size="xs"
+              className="h-7 w-7 p-0"
+              onClick={() => setViewMode("visualizer")}
+              title="ビジュアライザー表示"
+            >
+              <Activity className="h-3.5 w-3.5" />
+            </Button>
           </div>
 
           {!isFocusMode && (
@@ -701,6 +678,27 @@ function App() {
               <Info className="h-4 w-4" />
             </Button>
           )}
+
+          <div className="flex items-center gap-1 border rounded-md p-1 bg-muted/20 ml-2">
+            <Button
+              variant="ghost"
+              size="xs"
+              className="h-8 w-8 p-0"
+              onClick={() => settings.defaultFolder && loadMp3Files(settings.defaultFolder)}
+              title="ライブラリを更新"
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="xs"
+              className="h-8 w-8 p-0"
+              onClick={() => setShowSettings(true)}
+              title="設定"
+            >
+              <SettingsIcon className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
       </header>
 
